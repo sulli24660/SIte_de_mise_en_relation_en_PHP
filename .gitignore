@@ -428,4 +428,5 @@ FodyWeavers.xsd
 #*.lscache
 ## Uncomment the next line if you have a .NET Core project that uses the "vendor" folder for dependencies
 #
-/vendor
+/vendor/
+/config/config.php
