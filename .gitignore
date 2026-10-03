@@ -426,3 +426,6 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+## Uncomment the next line if you have a .NET Core project that uses the "vendor" folder for dependencies
+#
+/vendor
