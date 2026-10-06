@@ -9,4 +9,3 @@ $pdo = DBManager::getInstance()->getPDO();
 
 $books = $pdo->query('SELECT title FROM books')->fetchAll();
 
-var_dump($books);
