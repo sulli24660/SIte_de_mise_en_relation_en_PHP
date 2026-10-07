@@ -55,22 +55,22 @@ class Book
         $this->author = $author;
     }
 
-    public function getImage() : ?string
+    public function getImage(): ?string
     {
         return $this->image;
     }
 
-    public function setImage(string $image): void
+    public function setImage(?string $image): void
     {
         $this->image = $image;
     }
 
-    public function getDescription() : ?string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription(string $description): void
+    public function setDescription(?string $description): void
     {
         $this->description = $description;
     }
@@ -85,12 +85,12 @@ class Book
         $this->isAvailable = $isAvailable;
     }
 
-    public function getCreatedAt() : Datetime
+    public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(Datetime $createdAt) : void
+    public function setCreatedAt(DateTime $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
