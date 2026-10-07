@@ -1,11 +1,12 @@
 <?php
+require dirname(__DIR__) . '/config/config.php';
+require dirname(__DIR__) . '/config/autoload.php';
 
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../config/config.php';
+use App\Model\BookManager;
 
-use App\Service\DBManager;
+$bookManager = new BookManager();
+$books = $bookManager->findAll();
 
-$pdo = DBManager::getInstance()->getPDO();
-
-$books = $pdo->query('SELECT title FROM books')->fetchAll();
-
+foreach ($books as $book) {
+    echo '<p>' . htmlspecialchars($book->getTitle()) . ' — ' . htmlspecialchars($book->getAuthor()) . '</p>';
+}
