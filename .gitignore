@@ -428,5 +428,12 @@ FodyWeavers.xsd
 #*.lscache
 ## Uncomment the next line if you have a .NET Core project that uses the "vendor" folder for dependencies
 #
-/vendor/
+
+# Fichiers système macOS
+.DS_Store
+
+# Configuration locale (identifiants de la base de données)
 /config/config.php
+
+# Réglages de l'éditeur
+.vscode/
