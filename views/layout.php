@@ -11,11 +11,11 @@
 </head>
 
 <body>
-    <?php include '_header.php'; ?>
+     <?php require __DIR__ . '/partials/_header.php'; ?>
     <main>
         <?php require $templatePath ?>
     </main>
-    <?php include '_footer.php'; ?>
+    <?php require __DIR__ . '/partials/_footer.php'; ?>
 </body>
 
 </html>
