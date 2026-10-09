@@ -2,11 +2,18 @@
 require dirname(__DIR__) . '/config/config.php';
 require dirname(__DIR__) . '/config/autoload.php';
 
-use App\Model\BookManager;
+use App\Controller\BookController;
 
-$bookManager = new BookManager();
-$books = $bookManager->findAll();
+$action = $_GET['action'] ?? 'books';
 
-foreach ($books as $book) {
-    echo '<p>' . htmlspecialchars($book->getTitle()) . ' — ' . htmlspecialchars($book->getAuthor()) . '</p>';
+$bookController = new BookController();
+
+switch ($action) {
+    case 'books':
+        $bookController->index();
+        break;
+    default:
+        http_response_code(404);
+        echo 'Page introuvable';
+        break;
 }
