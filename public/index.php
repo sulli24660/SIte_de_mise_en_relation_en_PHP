@@ -12,6 +12,10 @@ switch ($action) {
     case 'books':
         $bookController->index();
         break;
+    case 'book':
+        $controller = new BookController();
+        $controller->show((int) ($_GET['id'] ?? 0));
+        break;
     default:
         http_response_code(404);
         echo 'Page introuvable';

@@ -34,4 +34,18 @@ class BookManager
 
         return $book;
     }
+
+    public function findById(int $id): ?Book
+    {
+        $pdo = DBManager::getInstance()->getPDO();
+        $stmt = $pdo->prepare('SELECT * FROM books WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+
+        if ($row === false) {
+            return null;
+        }
+
+        return $this->createBookFromRow($row);
+    }
 }
