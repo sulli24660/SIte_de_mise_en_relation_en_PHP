@@ -3,21 +3,15 @@ require dirname(__DIR__) . '/config/config.php';
 require dirname(__DIR__) . '/config/autoload.php';
 
 use App\Controller\BookController;
+use App\Core\RouterInterface;
 
-$action = $_GET['action'] ?? 'books';
+$container = require dirname(__DIR__) . '/config/container.php';
 
-$bookController = new BookController();
+$router = $container->get(RouterInterface::class);
 
-switch ($action) {
-    case 'books':
-        $bookController->index();
-        break;
-    case 'book':
-        $controller = new BookController();
-        $controller->show((int) ($_GET['id'] ?? 0));
-        break;
-    default:
-        http_response_code(404);
-        echo 'Page introuvable';
-        break;
-}
+$router->add('books', BookController::class, 'index');
+$router->add('book', BookController::class, 'show');
+
+$router
+    ->dispatch($_GET['action'] ?? 'books')
+    ->send();

@@ -2,38 +2,48 @@
 
 namespace App\Controller;
 
+use App\Core\Response;
+use App\Exceptions\NotFoundException;
 use App\Model\BookManager;
+use Throwable;
 
 class BookController
 {
-    public function index(): void
+    public function index(): Response
     {
         $bookManager = new BookManager();
         $books = $bookManager->findAll();
 
-        $this->render('books/index', ['books' => $books]);
+        return $this->render('books/index', ['books' => $books]);
     }
 
-    private function render(string $view, array $data = []): void
+    public function show(): Response
+    {
+        $id = (int) ($_GET['id'] ?? 0);
+        $bookManager = new BookManager();
+        $book = $bookManager->findById($id);
+
+        if ($book === null) {
+            throw new NotFoundException('Le livre avec l\'ID ' . $id . ' n\'existe pas.');
+        }
+
+        return $this->render('books/show', ['book' => $book]);
+    }
+
+    private function render(string $view, array $data = []): Response
     {
         extract($data);
 
         $templatePath = dirname(__DIR__, 2) . '/views/' . $view . '.php';
 
-        require dirname(__DIR__, 2) . '/views/layout.php';
-    }
-
-    public function show(int $id): void
-    {
-        $bookManager = new BookManager();
-        $book = $bookManager->findById($id);
-
-        if ($book === null) {
-            http_response_code(404);
-            echo 'Le livre avec l\'ID ' . $id . ' n\'existe pas.';
-            return;
+        ob_start();
+        try {
+            require dirname(__DIR__, 2) . '/views/layout.php';
+        } catch (Throwable $e) {
+            ob_end_clean();
+            throw $e;
         }
 
-        $this->render('books/show', ['book' => $book]);
+        return new Response(ob_get_clean());
     }
 }
