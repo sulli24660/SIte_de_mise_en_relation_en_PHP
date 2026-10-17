@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Model;
 
 use App\Service\DBManager;
@@ -20,6 +22,20 @@ class BookManager
         return $books;
     }
 
+    public function findById(int $id): ?Book
+    {
+        $pdo = DBManager::getInstance()->getPDO();
+        $stmt = $pdo->prepare('SELECT * FROM books WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+
+        if ($row === false) {
+            return null;
+        }
+
+        return $this->createBookFromRow($row);
+    }
+
     private function createBookFromRow(array $row): Book
     {
         $book = new Book();
@@ -33,19 +49,5 @@ class BookManager
         $book->setCreatedAt(new DateTime($row['created_at']));
 
         return $book;
-    }
-
-    public function findById(int $id): ?Book
-    {
-        $pdo = DBManager::getInstance()->getPDO();
-        $stmt = $pdo->prepare('SELECT * FROM books WHERE id = :id');
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch();
-
-        if ($row === false) {
-            return null;
-        }
-
-        return $this->createBookFromRow($row);
     }
 }
