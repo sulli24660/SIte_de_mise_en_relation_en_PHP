@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Controller\BookController;
+use App\Exception\NotFoundException;
 
 class Router
 {
@@ -20,9 +21,7 @@ class Router
                 break;
 
             default:
-                http_response_code(404);
-                echo 'Page introuvable';
-                break;
+                throw new NotFoundException();
         }
     }
 }

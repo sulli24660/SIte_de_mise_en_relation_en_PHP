@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\BookManager;
+use App\Exception\NotFoundException;
 
 class BookController
 {
@@ -19,9 +20,7 @@ class BookController
         $book = (new BookManager())->findById($id);
 
         if ($book === null) {
-            http_response_code(404);
-            echo 'Le livre avec l\'ID ' . $id . ' n\'existe pas.';
-            return;
+            throw new NotFoundException('Le livre avec l\'ID ' . $id . ' n\'existe pas.');
         }
         $this->render('books/show', ['book' => $book]);
     }
