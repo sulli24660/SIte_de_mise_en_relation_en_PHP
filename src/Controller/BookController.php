@@ -6,13 +6,14 @@ namespace App\Controller;
 
 use App\Model\BookManager;
 use App\Exception\NotFoundException;
+use App\Service\View;
 
 class BookController
 {
     public function index(): void
     {
         $books = (new BookManager())->findAll();
-        $this->render('books/index', ['books' => $books]);
+        (new View())->render('books/index', ['books' => $books]);
     }
 
     public function show(int $id): void
@@ -22,7 +23,7 @@ class BookController
         if ($book === null) {
             throw new NotFoundException('Le livre avec l\'ID ' . $id . ' n\'existe pas.');
         }
-        $this->render('books/show', ['book' => $book]);
+        (new View())->render('books/show', ['book' => $book]);
     }
     private function render(string $view, array $data = []): void
     {
