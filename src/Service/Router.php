@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Controller\BookController;
 use App\Exception\NotFoundException;
+use App\Controller\UserController;
 
 class Router
 {
@@ -18,6 +19,10 @@ class Router
 
             case 'book':
                 (new BookController())->show((int) ($params['id'] ?? 0));
+                break;
+
+            case 'register':
+                (new UserController())->register();
                 break;
 
             default:
