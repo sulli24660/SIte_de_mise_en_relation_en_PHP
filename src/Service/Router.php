@@ -7,6 +7,8 @@ namespace App\Service;
 use App\Controller\BookController;
 use App\Exception\NotFoundException;
 use App\Controller\UserController;
+use App\Request\CreateUserRequest;
+use App\Validator\Validator;
 
 class Router
 {
@@ -22,7 +24,9 @@ class Router
                 break;
 
             case 'register':
-                (new UserController())->register();
+                (new UserController())->register(
+                    new CreateUserRequest(new Validator(DBManager::getInstance()->getPDO()))
+                );
                 break;
 
             default:
