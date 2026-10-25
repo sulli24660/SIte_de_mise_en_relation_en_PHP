@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\BookManager;
 use App\Exception\NotFoundException;
+use App\Model\BookManager;
 use App\Service\View;
 
-class BookController
+final class BookController
 {
+    public function __construct(
+        private readonly BookManager $bookManager,
+        private readonly View $view,
+    ) {
+    }
+
     public function index(): void
     {
-        $books = (new BookManager())->findAll();
-        (new View())->render('books/index', ['books' => $books]);
+        $books = $this->bookManager->findAll();
+
+        $this->view->render('books/index', ['books' => $books]);
     }
 
     public function show(int $id): void
     {
-        $book = (new BookManager())->findById($id);
+        $book = $this->bookManager->findById($id);
 
         if ($book === null) {
             throw new NotFoundException('Le livre avec l\'ID ' . $id . ' n\'existe pas.');
         }
-        (new View())->render('books/show', ['book' => $book]);
-    }
-    private function render(string $view, array $data = []): void
-    {
-        extract($data);
 
-        $templatePath = dirname(__DIR__, 2) . '/views/' . $view . '.php';
-
-        require dirname(__DIR__, 2) . '/views/layout.php';
+        $this->view->render('books/show', ['book' => $book]);
     }
 }

@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Controller\BookController;
-use App\Exception\NotFoundException;
 use App\Controller\UserController;
+use App\Exception\NotFoundException;
+use App\Model\BookManager;
 
-class Router
+final class Router
 {
     public function dispatch(string $action, array $params = []): void
     {
         switch ($action) {
             case 'books':
-                (new BookController())->index();
+                $this->createBookController()->index();
                 break;
 
             case 'book':
-                (new BookController())->show((int) ($params['id'] ?? 0));
+                $this->createBookController()->show((int) ($params['id'] ?? 0));
                 break;
 
             case 'register':
@@ -28,5 +29,10 @@ class Router
             default:
                 throw new NotFoundException();
         }
+    }
+
+    private function createBookController(): BookController
+    {
+        return new BookController(new BookManager(), new View());
     }
 }
