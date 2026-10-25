@@ -6,14 +6,13 @@ namespace App\Controller;
 
 use App\Model\UserManager;
 use App\Service\View;
-use App\Validator\UserValidator;
+use App\Validator\Validator;
 
-class UserController
+final class UserController
 {
     public function register(): void
     {
-
-        $errors = [];
+        $errors = null;
         $pseudo = '';
         $email = '';
 
@@ -22,29 +21,30 @@ class UserController
             $email = mb_strtolower(trim($this->getPostValue('email')));
             $password = $this->getPostValue('password');
 
-            $pseudoError = UserValidator::validatePseudo($pseudo);
-            if ($pseudoError !== null) {
-                $errors['pseudo'] = $pseudoError;
-            }
-
-            $emailError = UserValidator::validateEmail($email);
-            if ($emailError !== null) {
-                $errors['email'] = $emailError;
-            }
-
-            $passwordError = UserValidator::validatePassword($password);
-            if ($passwordError !== null) {
-                $errors['password'] = $passwordError;
-            }
+            $errors = Validator::validate(
+                [
+                    'pseudo' => $pseudo,
+                    'email' => $email,
+                    'password' => $password,
+                ],
+                [
+                    'pseudo' => ['required', 'min:3', 'max:50', 'regex:/^[a-zA-Z0-9_]+$/D'],
+                    'email' => ['required', 'max:255', 'email'],
+                    'password' => ['required', 'min:8', 'maxbytes:72'],
+                ],
+                [
+                    'pseudo.regex' => 'Le pseudo ne peut contenir que des lettres, des chiffres et des underscores.',
+                ]
+            );
 
             $userManager = new UserManager();
 
-            if (!isset($errors['pseudo']) && $userManager->pseudoExists($pseudo)) {
-                $errors['pseudo'] = 'Ce pseudo est déjà pris.';
+            if (!$errors->has('pseudo') && $userManager->pseudoExists($pseudo)) {
+                $errors->add('pseudo', 'Ce pseudo est déjà pris.');
             }
 
-            if (!isset($errors['email']) && $userManager->emailExists($email)) {
-                $errors['email'] = 'Cette adresse email est déjà utilisée.';
+            if (!$errors->has('email') && $userManager->emailExists($email)) {
+                $errors->add('email', 'Cette adresse e-mail est déjà utilisée.');
             }
         }
 
@@ -52,9 +52,9 @@ class UserController
             'errors' => $errors,
             'pseudo' => $pseudo,
             'email' => $email,
-            
         ]);
     }
+
     private function getPostValue(string $key): string
     {
         $value = $_POST[$key] ?? '';
