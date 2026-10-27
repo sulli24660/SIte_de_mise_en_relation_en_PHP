@@ -34,7 +34,9 @@ final class Router
 
     private function createBookController(): BookController
     {
-        return new BookController(new BookManager(), new View());
+        $pdo = DBManager::getInstance()->getPDO();
+
+        return new BookController(new BookManager($pdo), new View());
     }
 
     private function createUserController(): UserController

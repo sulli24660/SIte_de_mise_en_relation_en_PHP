@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use App\Service\DBManager;
 use DateTime;
+use PDO;
 
-class BookManager
+final class BookManager
 {
+    public function __construct(private readonly PDO $pdo)
+    {
+    }
+
     public function findAll(): array
     {
-        $pdo = DBManager::getInstance()->getPDO();
-        $rows = $pdo->query('SELECT * FROM books ORDER BY created_at DESC')->fetchAll();
+        $rows = $this->pdo->query('SELECT * FROM books ORDER BY created_at DESC')->fetchAll();
 
         $books = [];
         foreach ($rows as $row) {
@@ -24,8 +27,7 @@ class BookManager
 
     public function findById(int $id): ?Book
     {
-        $pdo = DBManager::getInstance()->getPDO();
-        $stmt = $pdo->prepare('SELECT * FROM books WHERE id = :id');
+        $stmt = $this->pdo->prepare('SELECT * FROM books WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
 
