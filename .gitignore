@@ -6,3 +6,7 @@
 
 # Réglages de l'éditeur
 .vscode/
+
+# Presentation Pptx du projet
+/docs/TomTroc_documentation.pptx
+/docs
