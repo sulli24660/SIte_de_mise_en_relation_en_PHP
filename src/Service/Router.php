@@ -8,6 +8,7 @@ use App\Controller\BookController;
 use App\Controller\UserController;
 use App\Exception\NotFoundException;
 use App\Model\BookManager;
+use App\Model\UserManager;
 
 final class Router
 {
@@ -23,7 +24,7 @@ final class Router
                 break;
 
             case 'register':
-                (new UserController())->register();
+                $this->createUserController()->register();
                 break;
 
             default:
@@ -34,5 +35,10 @@ final class Router
     private function createBookController(): BookController
     {
         return new BookController(new BookManager(), new View());
+    }
+
+    private function createUserController(): UserController
+    {
+        return new UserController(new UserManager(), new View());
     }
 }

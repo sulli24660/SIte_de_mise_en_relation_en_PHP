@@ -10,6 +10,11 @@ use App\Validator\Validator;
 
 final class UserController
 {
+    public function __construct(
+        private readonly UserManager $userManager,
+        private readonly View $view,
+    ) {}
+
     public function register(): void
     {
         $errors = null;
@@ -37,18 +42,16 @@ final class UserController
                 ]
             );
 
-            $userManager = new UserManager();
-
-            if (!$errors->has('pseudo') && $userManager->pseudoExists($pseudo)) {
+            if (!$errors->has('pseudo') && $this->userManager->pseudoExists($pseudo)) {
                 $errors->add('pseudo', 'Ce pseudo est déjà pris.');
             }
 
-            if (!$errors->has('email') && $userManager->emailExists($email)) {
+            if (!$errors->has('email') && $this->userManager->emailExists($email)) {
                 $errors->add('email', 'Cette adresse e-mail est déjà utilisée.');
             }
         }
 
-        (new View())->render('users/register', [
+        $this->view->render('users/register', [
             'errors' => $errors,
             'pseudo' => $pseudo,
             'email' => $email,
