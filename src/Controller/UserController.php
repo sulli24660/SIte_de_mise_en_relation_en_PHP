@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\User;
 use App\Model\UserManager;
 use App\Service\View;
 use App\Validator\Validator;
@@ -48,6 +49,18 @@ final class UserController
 
             if (!$errors->has('email') && $this->userManager->emailExists($email)) {
                 $errors->add('email', 'Cette adresse e-mail est déjà utilisée.');
+            }
+
+            if ($errors->isEmpty()) {
+                $user = new User();
+                $user->setPseudo($pseudo);
+                $user->setEmail($email);
+                $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
+
+                $this->userManager->create($user);
+
+                header('Location: index.php?action=books');
+                exit;
             }
         }
 
