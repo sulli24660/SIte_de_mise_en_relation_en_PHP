@@ -1,7 +1,7 @@
 <section>
     <h1>Inscription</h1>
 
-    <form action="index.php?action=register" method="post" >
+    <form action="index.php?action=register" method="post">
         <div>
             <label for="pseudo">Pseudo</label>
             <input type="text" id="pseudo" name="pseudo"
