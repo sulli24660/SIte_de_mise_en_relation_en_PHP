@@ -41,6 +41,8 @@ final class Router
 
     private function createUserController(): UserController
     {
-        return new UserController(new UserManager(), new View());
+        $pdo = DBManager::getInstance()->getPDO();
+
+        return new UserController(new UserManager($pdo), new View());
     }
 }
