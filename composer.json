@@ -1,0 +1,9 @@
+{
+    "name": "romuald/tomtroc",
+    "description": "Projet 4 OpenClassrooms : site de mise en relation pour l'échange de livres",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
