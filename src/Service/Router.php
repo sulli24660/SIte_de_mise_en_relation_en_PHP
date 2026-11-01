@@ -43,6 +43,10 @@ final class Router
                 $this->createUserController()->register();
                 break;
 
+            case 'login':
+                $this->createUserController()->login();
+                break;
+
             default:
                 throw new NotFoundException();
         }

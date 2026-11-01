@@ -12,7 +12,7 @@ use App\Validator\ErrorBag;
 use App\Validator\Validator;
 
 /**
- * Gère les pages liées aux utilisateurs (inscription, puis connexion).
+ * Gère les pages liées aux utilisateurs (inscription, connexion).
  */
 final class UserController
 {
@@ -67,6 +67,21 @@ final class UserController
             'errors' => $errors,
             'pseudo' => $pseudo,
             'email' => $email,
+            'csrfToken' => $this->csrfTokenManager->getToken(),
+        ]);
+    }
+
+    /**
+     * Affiche le formulaire de connexion.
+     *
+     * Le traitement de la soumission (vérification des identifiants,
+     * ouverture de la session) sera ajouté à l'étape suivante.
+     */
+    public function login(): void
+    {
+        $this->view->render('users/login', [
+            'errors' => null,
+            'email' => '',
             'csrfToken' => $this->csrfTokenManager->getToken(),
         ]);
     }
