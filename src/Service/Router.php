@@ -59,7 +59,10 @@ final class Router
     {
         $pdo = DBManager::getInstance()->getPDO();
 
-        return new BookController(new BookManager($pdo), new View());
+        return new BookController(
+            new BookManager($pdo),
+            new View(new CsrfTokenManager()),
+        );
     }
 
     /**
@@ -68,11 +71,12 @@ final class Router
     private function createUserController(): UserController
     {
         $pdo = DBManager::getInstance()->getPDO();
+        $csrfTokenManager = new CsrfTokenManager();
 
         return new UserController(
             new UserManager($pdo),
-            new View(),
-            new CsrfTokenManager(),
+            new View($csrfTokenManager),
+            $csrfTokenManager,
         );
     }
 }
