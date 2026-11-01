@@ -16,6 +16,15 @@ use App\Validator\Validator;
  */
 final class UserController
 {
+    /**
+     * Hash bcrypt d'un mot de passe aléatoire, qui ne correspond à aucun compte.
+     *
+     * Quand l'e-mail saisi est inconnu, on vérifie quand même le mot de passe
+     * contre ce hash : la réponse prend alors le même temps qu'avec un e-mail
+     * existant, et un attaquant ne peut pas deviner quels e-mails sont inscrits.
+     */
+    private const DUMMY_PASSWORD_HASH = '$2y$10$fLAenOmNqh9NCbWm2ESTAuGgSPqH.AWmHjiP4IlZ1vQOH9Lhc2Uhq';
+
     public function __construct(
         private readonly UserManager $userManager,
         private readonly View $view,
@@ -72,16 +81,52 @@ final class UserController
     }
 
     /**
-     * Affiche le formulaire de connexion.
+     * Affiche le formulaire de connexion et traite sa soumission.
      *
-     * Le traitement de la soumission (vérification des identifiants,
-     * ouverture de la session) sera ajouté à l'étape suivante.
+     * En cas de succès, l'identifiant de l'utilisateur est enregistré
+     * en session puis l'utilisateur est redirigé.
      */
     public function login(): void
     {
+        $errors = null;
+        $email = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = mb_strtolower(trim($this->getPostValue('email')));
+            $password = $this->getPostValue('password');
+            $errors = new ErrorBag();
+
+            if (!$this->csrfTokenManager->isValid($_POST['csrf_token'] ?? null)) {
+                $errors->add('form', 'Votre session a expiré. Merci de renvoyer le formulaire.');
+            } else {
+                $user = $this->userManager->findByEmail($email);
+
+                // password_verify() est appelé dans tous les cas (hash factice si
+                // l'e-mail est inconnu) pour que le temps de réponse soit identique.
+                $passwordHash = $user?->getPassword() ?? self::DUMMY_PASSWORD_HASH;
+                $isPasswordValid = password_verify($password, $passwordHash);
+
+                if ($user === null || !$isPasswordValid) {
+                    // Message volontairement identique dans les deux cas :
+                    // on ne révèle jamais si l'e-mail possède un compte.
+                    $errors->add('form', 'Identifiants incorrects.');
+                } else {
+                    // Nouvel identifiant de session à la connexion : un identifiant
+                    // obtenu avant (fixation de session) devient inutilisable.
+                    session_regenerate_id(true);
+                    $_SESSION['user_id'] = $user->getId();
+                    $this->csrfTokenManager->regenerate();
+
+                    header('Location: index.php?action=books');
+                    exit;
+                }
+            }
+        }
+
+        // L'e-mail est réaffiché pour le confort de l'utilisateur, jamais le mot de passe.
         $this->view->render('users/login', [
-            'errors' => null,
-            'email' => '',
+            'errors' => $errors,
+            'email' => $email,
             'csrfToken' => $this->csrfTokenManager->getToken(),
         ]);
     }

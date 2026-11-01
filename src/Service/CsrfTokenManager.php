@@ -27,12 +27,23 @@ final class CsrfTokenManager
     public function getToken(): string
     {
         if (!isset($_SESSION[self::SESSION_KEY]) || !is_string($_SESSION[self::SESSION_KEY])) {
-            // random_bytes() est un générateur cryptographiquement sûr :
-            // le résultat est imprévisible, contrairement à rand() ou uniqid().
-            $_SESSION[self::SESSION_KEY] = bin2hex(random_bytes(32));
+            $this->regenerate();
         }
 
         return $_SESSION[self::SESSION_KEY];
+    }
+
+    /**
+     * Remplace le jeton de la session par un nouveau.
+     *
+     * À appeler quand le niveau de privilège change (connexion,
+     * déconnexion) : un jeton obtenu avant ce changement devient inutilisable.
+     */
+    public function regenerate(): void
+    {
+        // random_bytes() est un générateur cryptographiquement sûr :
+        // le résultat est imprévisible, contrairement à rand() ou uniqid().
+        $_SESSION[self::SESSION_KEY] = bin2hex(random_bytes(32));
     }
 
     /**
