@@ -12,7 +12,7 @@ use App\Validator\ErrorBag;
 use App\Validator\Validator;
 
 /**
- * Gère les pages liées aux utilisateurs (inscription, connexion).
+ * Gère les pages liées aux utilisateurs (inscription, connexion, déconnexion).
  */
 final class UserController
 {
@@ -72,11 +72,11 @@ final class UserController
         }
 
         // Le mot de passe n'est volontairement jamais renvoyé à la vue.
+        // Le jeton CSRF est fourni automatiquement par la View.
         $this->view->render('users/register', [
             'errors' => $errors,
             'pseudo' => $pseudo,
             'email' => $email,
-            'csrfToken' => $this->csrfTokenManager->getToken(),
         ]);
     }
 
@@ -127,8 +127,45 @@ final class UserController
         $this->view->render('users/login', [
             'errors' => $errors,
             'email' => $email,
-            'csrfToken' => $this->csrfTokenManager->getToken(),
         ]);
+    }
+
+    /**
+     * Déconnecte l'utilisateur : vide et détruit la session, supprime son cookie.
+     *
+     * N'accepte qu'une requête POST avec un jeton CSRF valide : un lien
+     * ou une image piégée sur un autre site ne peut pas déconnecter l'utilisateur.
+     */
+    public function logout(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST'
+            || !$this->csrfTokenManager->isValid($_POST['csrf_token'] ?? null)
+        ) {
+            // Requête non légitime : on l'ignore sans rien modifier.
+            header('Location: index.php?action=books');
+            exit;
+        }
+
+        // 1. Vider les données de la session.
+        $_SESSION = [];
+
+        // 2. Supprimer le cookie de session dans le navigateur, avec une date
+        //    d'expiration passée et les mêmes paramètres qu'à sa création.
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', [
+            'expires' => time() - 3600,
+            'path' => $params['path'],
+            'domain' => $params['domain'],
+            'secure' => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'],
+        ]);
+
+        // 3. Détruire la session côté serveur.
+        session_destroy();
+
+        header('Location: index.php?action=books');
+        exit;
     }
 
     /**
