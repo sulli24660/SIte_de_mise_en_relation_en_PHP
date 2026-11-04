@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Controller\BookController;
 use App\Controller\UserController;
 use App\Exception\NotFoundException;
+use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
 use App\Model\UserManager;
 
@@ -20,6 +21,11 @@ use App\Model\UserManager;
 final class Router
 {
     /**
+     * Actions réservées aux utilisateurs connectés.
+     */
+    private const PROTECTED_ACTIONS = ['account', 'messages'];
+
+    /**
      * Exécute l'action demandée.
      *
      * @param string $action Nom de l'action (paramètre "action" de l'URL).
@@ -29,6 +35,12 @@ final class Router
      */
     public function dispatch(string $action, array $params = []): void
     {
+        // Contrôle d'accès avant toute exécution de contrôleur.
+        // true : comparaison stricte (même type et même valeur).
+        if (in_array($action, self::PROTECTED_ACTIONS, true)) {
+            (new AuthMiddleware())->handle();
+        }
+
         switch ($action) {
             case 'books':
                 $this->createBookController()->index();
