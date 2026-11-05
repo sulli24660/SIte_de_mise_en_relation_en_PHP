@@ -22,6 +22,9 @@ final class Router
 {
     /**
      * Actions réservées aux utilisateurs connectés.
+     *
+     * Toute nouvelle page privée doit être ajoutée ici : le contrôle
+     * d'accès est ainsi centralisé et ne peut pas être oublié.
      */
     private const PROTECTED_ACTIONS = ['account', 'messages'];
 
@@ -38,7 +41,7 @@ final class Router
         // Contrôle d'accès avant toute exécution de contrôleur.
         // true : comparaison stricte (même type et même valeur).
         if (in_array($action, self::PROTECTED_ACTIONS, true)) {
-            (new AuthMiddleware())->handle();
+            (new AuthMiddleware(new AuthService()))->handle();
         }
 
         switch ($action) {
@@ -77,7 +80,7 @@ final class Router
 
         return new BookController(
             new BookManager($pdo),
-            new View(new CsrfTokenManager()),
+            new View(new CsrfTokenManager(), new AuthService()),
         );
     }
 
@@ -91,7 +94,7 @@ final class Router
 
         return new UserController(
             new UserManager($pdo),
-            new View($csrfTokenManager),
+            new View($csrfTokenManager, new AuthService()),
             $csrfTokenManager,
         );
     }

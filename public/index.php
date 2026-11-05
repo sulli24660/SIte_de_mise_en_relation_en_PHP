@@ -15,6 +15,7 @@ require dirname(__DIR__) . '/config/config.php';
 require dirname(__DIR__) . '/config/autoload.php';
 
 use App\Exception\NotFoundException;
+use App\Service\AuthService;
 use App\Service\CsrfTokenManager;
 use App\Service\Router;
 use App\Service\View;
@@ -40,11 +41,11 @@ try {
 } catch (NotFoundException $e) {
     // Page ou ressource inexistante : code HTTP 404 et message prévu pour l'utilisateur.
     http_response_code($e->getCode());
-    (new View(new CsrfTokenManager()))->render('error', ['message' => $e->getMessage()]);
+    (new View(new CsrfTokenManager(), new AuthService()))->render('error', ['message' => $e->getMessage()]);
 } catch (Throwable $e) {
     // Erreur inattendue : le détail technique va dans le journal du serveur,
     // jamais à l'écran, pour ne pas révéler d'informations sur l'application.
     error_log((string) $e);
     http_response_code(500);
-    (new View(new CsrfTokenManager()))->render('error', ['message' => 'Une erreur est survenue. Veuillez réessayer plus tard.']);
+    (new View(new CsrfTokenManager(), new AuthService()))->render('error', ['message' => 'Une erreur est survenue. Veuillez réessayer plus tard.']);
 }

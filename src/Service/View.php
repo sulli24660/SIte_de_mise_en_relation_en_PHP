@@ -14,8 +14,10 @@ namespace App\Service;
  */
 final class View
 {
-    public function __construct(private readonly CsrfTokenManager $csrfTokenManager)
-    {
+    public function __construct(
+        private readonly CsrfTokenManager $csrfTokenManager,
+        private readonly AuthService $authService,
+    ) {
     }
 
     /**
@@ -26,7 +28,7 @@ final class View
     {
         // Les données communes sont fixées ici et écrasent toute valeur du même
         // nom venant du contrôleur : elles restent donc toujours fiables.
-        $data['isLoggedIn'] = isset($_SESSION['user_id']);
+        $data['isLoggedIn'] = $this->authService->isLoggedIn();
         $data['csrfToken'] = $this->csrfTokenManager->getToken();
 
         // EXTR_SKIP : une clé de $data ne peut pas écraser une variable déjà définie.
