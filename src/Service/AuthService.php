@@ -21,6 +21,8 @@ final class AuthService
 
     /**
      * Indique si un utilisateur est connecté.
+     *
+     * @return bool true si un identifiant valide est présent en session.
      */
     public function isLoggedIn(): bool
     {
@@ -45,6 +47,8 @@ final class AuthService
      * Connecte l'utilisateur en enregistrant son identifiant en session.
      *
      * À appeler uniquement après avoir vérifié ses identifiants.
+     *
+     * @param int $userId Identifiant de l'utilisateur authentifié.
      */
     public function login(int $userId): void
     {

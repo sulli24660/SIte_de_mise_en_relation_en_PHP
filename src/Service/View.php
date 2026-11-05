@@ -14,6 +14,10 @@ namespace App\Service;
  */
 final class View
 {
+    /**
+     * @param CsrfTokenManager $csrfTokenManager Fournit le jeton anti-CSRF des formulaires.
+     * @param AuthService      $authService      Indique si un utilisateur est connecté.
+     */
     public function __construct(
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly AuthService $authService,
@@ -21,8 +25,10 @@ final class View
     }
 
     /**
-     * @param string $view Chemin de la vue, sans extension, depuis le dossier views (ex. "books/index").
-     * @param array  $data Variables à rendre disponibles dans la vue.
+     * Affiche une vue dans le layout.
+     *
+     * @param string               $view Chemin de la vue, sans extension, depuis le dossier views (ex. "books/index").
+     * @param array<string, mixed> $data Variables à rendre disponibles dans la vue.
      */
     public function render(string $view, array $data = []): void
     {

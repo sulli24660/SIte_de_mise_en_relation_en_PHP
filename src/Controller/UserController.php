@@ -29,6 +29,12 @@ final class UserController
      */
     private const DUMMY_PASSWORD_HASH = '$2y$10$fLAenOmNqh9NCbWm2ESTAuGgSPqH.AWmHjiP4IlZ1vQOH9Lhc2Uhq';
 
+    /**
+     * @param UserManager      $userManager      Accès aux utilisateurs en base de données.
+     * @param View             $view             Service d'affichage des vues.
+     * @param CsrfTokenManager $csrfTokenManager Vérifie et renouvelle le jeton anti-CSRF.
+     * @param AuthService      $authService      Connecte et déconnecte l'utilisateur.
+     */
     public function __construct(
         private readonly UserManager $userManager,
         private readonly View $view,
@@ -157,7 +163,11 @@ final class UserController
      * Valide les données d'inscription : format des champs,
      * puis unicité du pseudo et de l'e-mail en base.
      *
-     * @return ErrorBag Erreurs trouvées (vide si tout est valide).
+     * @param string $pseudo   Pseudo saisi, déjà nettoyé (trim).
+     * @param string $email    E-mail saisi, nettoyé et en minuscules.
+     * @param string $password Mot de passe saisi, en clair (jamais stocké tel quel).
+     *
+     * @return ErrorBag Erreurs trouvées, regroupées par champ (vide si tout est valide).
      */
     private function validateRegistration(string $pseudo, string $email, string $password): ErrorBag
     {
@@ -195,6 +205,10 @@ final class UserController
      *
      * Un champ absent, ou envoyé sous forme de tableau (name="pseudo[]"),
      * est remplacé par une chaîne vide.
+     *
+     * @param string $key Nom du champ du formulaire.
+     *
+     * @return string Valeur du champ, ou chaîne vide si elle est absente ou invalide.
      */
     private function getPostValue(string $key): string
     {

@@ -31,11 +31,18 @@ final class Validator
     ];
 
     /**
+     * Valide un ensemble de champs et retourne les erreurs trouvées.
+     *
+     * Pour chaque champ, les règles sont testées dans l'ordre et la
+     * validation s'arrête à la première règle non respectée.
+     *
      * @param array<string, string>       $data     Valeurs à valider, indexées par nom de champ.
      * @param array<string, list<string>> $rules    Règles à appliquer à chaque champ.
      * @param array<string, string>       $messages Messages personnalisés, indexés par « champ.règle ».
      *
      * @return ErrorBag Première erreur de chaque champ invalide ; vide si tout est valide.
+     *
+     * @throws InvalidArgumentException Si une règle inconnue est utilisée.
      */
     public static function validate(array $data, array $rules, array $messages = []): ErrorBag
     {
@@ -67,6 +74,14 @@ final class Validator
     }
 
     /**
+     * Indique si une valeur respecte une règle.
+     *
+     * @param string $rule  Nom de la règle (ex. "min").
+     * @param string $value Valeur à tester.
+     * @param string $param Paramètre de la règle (ex. "3" pour "min:3"), vide s'il n'y en a pas.
+     *
+     * @return bool true si la règle est respectée.
+     *
      * @throws InvalidArgumentException Si la règle est inconnue, pour ne jamais l'ignorer en silence.
      */
     private static function passes(string $rule, string $value, string $param): bool

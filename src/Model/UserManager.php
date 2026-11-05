@@ -16,12 +16,19 @@ use PDO;
  */
 final class UserManager
 {
+    /**
+     * @param PDO $pdo Connexion à la base de données, fournie par le Router.
+     */
     public function __construct(private readonly PDO $pdo)
     {
     }
 
     /**
      * Indique si un compte utilise déjà cette adresse e-mail.
+     *
+     * @param string $email Adresse e-mail à rechercher (en minuscules).
+     *
+     * @return bool true si un compte utilise déjà cette adresse.
      */
     public function emailExists(string $email): bool
     {
@@ -34,6 +41,10 @@ final class UserManager
 
     /**
      * Indique si un compte utilise déjà ce pseudo.
+     *
+     * @param string $pseudo Pseudo à rechercher.
+     *
+     * @return bool true si un compte utilise déjà ce pseudo.
      */
     public function pseudoExists(string $pseudo): bool
     {
@@ -49,6 +60,8 @@ final class UserManager
      * Utilisé à la connexion : l'objet retourné contient le mot de
      * passe haché, qui ne doit servir qu'à password_verify() et ne
      * doit jamais être transmis à une vue.
+     *
+     * @param string $email Adresse e-mail saisie (en minuscules).
      *
      * @return User|null L'utilisateur, ou null si aucun compte ne correspond.
      */
@@ -97,6 +110,8 @@ final class UserManager
      * Transforme une ligne de la table "users" en objet User.
      *
      * @param array<string, mixed> $row Ligne retournée par PDO.
+     *
+     * @return User Utilisateur construit à partir de la ligne.
      */
     private function createUserFromRow(array $row): User
     {

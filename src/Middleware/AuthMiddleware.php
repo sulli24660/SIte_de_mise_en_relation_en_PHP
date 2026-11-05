@@ -15,6 +15,9 @@ use App\Service\AuthService;
  */
 final class AuthMiddleware
 {
+    /**
+     * @param AuthService $authService Service qui indique si un utilisateur est connecté.
+     */
     public function __construct(private readonly AuthService $authService)
     {
     }
@@ -22,6 +25,9 @@ final class AuthMiddleware
     /**
      * Laisse passer la requête si l'utilisateur est connecté,
      * sinon le redirige vers la page de connexion.
+     *
+     * La méthode ne retourne rien : si elle se termine normalement,
+     * le Router poursuit et appelle le contrôleur.
      */
     public function handle(): void
     {

@@ -31,8 +31,8 @@ final class Router
     /**
      * Exécute l'action demandée.
      *
-     * @param string $action Nom de l'action (paramètre "action" de l'URL).
-     * @param array  $params Paramètres de la requête (en général $_GET).
+     * @param string               $action Nom de l'action (paramètre "action" de l'URL).
+     * @param array<string, mixed> $params Paramètres de la requête (en général $_GET).
      *
      * @throws NotFoundException Si l'action n'existe pas.
      */
@@ -73,6 +73,8 @@ final class Router
 
     /**
      * Construit le contrôleur des livres avec ses dépendances.
+     *
+     * @return BookController Contrôleur prêt à l'emploi.
      */
     private function createBookController(): BookController
     {
@@ -89,6 +91,8 @@ final class Router
      *
      * Les services sont créés une seule fois et partagés entre la vue
      * et le contrôleur.
+     *
+     * @return UserController Contrôleur prêt à l'emploi.
      */
     private function createUserController(): UserController
     {
