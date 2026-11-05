@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Model\User;
 use App\Model\UserManager;
+use App\Service\AuthService;
 use App\Service\CsrfTokenManager;
 use App\Service\View;
 use App\Validator\ErrorBag;
@@ -13,6 +14,9 @@ use App\Validator\Validator;
 
 /**
  * Gère les pages liées aux utilisateurs (inscription, connexion, déconnexion).
+ *
+ * Le contrôleur traite les formulaires ; la gestion de la session
+ * d'authentification est déléguée à l'AuthService.
  */
 final class UserController
 {
@@ -29,6 +33,7 @@ final class UserController
         private readonly UserManager $userManager,
         private readonly View $view,
         private readonly CsrfTokenManager $csrfTokenManager,
+        private readonly AuthService $authService,
     ) {}
 
     /**
@@ -83,8 +88,8 @@ final class UserController
     /**
      * Affiche le formulaire de connexion et traite sa soumission.
      *
-     * En cas de succès, l'identifiant de l'utilisateur est enregistré
-     * en session puis l'utilisateur est redirigé.
+     * En cas de succès, l'utilisateur est connecté via l'AuthService
+     * puis redirigé.
      */
     public function login(): void
     {
@@ -111,10 +116,8 @@ final class UserController
                     // on ne révèle jamais si l'e-mail possède un compte.
                     $errors->add('form', 'Identifiants incorrects.');
                 } else {
-                    // Nouvel identifiant de session à la connexion : un identifiant
-                    // obtenu avant (fixation de session) devient inutilisable.
-                    session_regenerate_id(true);
-                    $_SESSION['user_id'] = $user->getId();
+                    $this->authService->login($user->getId());
+                    // Nouveau jeton CSRF : celui d'avant la connexion devient inutilisable.
                     $this->csrfTokenManager->regenerate();
 
                     header('Location: index.php?action=books');
@@ -131,39 +134,21 @@ final class UserController
     }
 
     /**
-     * Déconnecte l'utilisateur : vide et détruit la session, supprime son cookie.
+     * Déconnecte l'utilisateur via l'AuthService.
      *
      * N'accepte qu'une requête POST avec un jeton CSRF valide : un lien
      * ou une image piégée sur un autre site ne peut pas déconnecter l'utilisateur.
      */
     public function logout(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST'
-            || !$this->csrfTokenManager->isValid($_POST['csrf_token'] ?? null)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST'
+            && $this->csrfTokenManager->isValid($_POST['csrf_token'] ?? null)
         ) {
-            // Requête non légitime : on l'ignore sans rien modifier.
-            header('Location: index.php?action=books');
-            exit;
+            $this->authService->logout();
         }
 
-        // 1. Vider les données de la session.
-        $_SESSION = [];
-
-        // 2. Supprimer le cookie de session dans le navigateur, avec une date
-        //    d'expiration passée et les mêmes paramètres qu'à sa création.
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', [
-            'expires' => time() - 3600,
-            'path' => $params['path'],
-            'domain' => $params['domain'],
-            'secure' => $params['secure'],
-            'httponly' => $params['httponly'],
-            'samesite' => $params['samesite'],
-        ]);
-
-        // 3. Détruire la session côté serveur.
-        session_destroy();
-
+        // Dans tous les cas, retour à la liste des livres. Une requête non
+        // légitime est simplement ignorée, sans rien modifier.
         header('Location: index.php?action=books');
         exit;
     }

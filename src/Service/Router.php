@@ -86,16 +86,21 @@ final class Router
 
     /**
      * Construit le contrôleur des utilisateurs avec ses dépendances.
+     *
+     * Les services sont créés une seule fois et partagés entre la vue
+     * et le contrôleur.
      */
     private function createUserController(): UserController
     {
         $pdo = DBManager::getInstance()->getPDO();
         $csrfTokenManager = new CsrfTokenManager();
+        $authService = new AuthService();
 
         return new UserController(
             new UserManager($pdo),
-            new View($csrfTokenManager, new AuthService()),
+            new View($csrfTokenManager, $authService),
             $csrfTokenManager,
+            $authService,
         );
     }
 }
