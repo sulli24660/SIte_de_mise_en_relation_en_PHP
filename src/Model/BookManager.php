@@ -5,43 +5,25 @@ declare(strict_types=1);
 namespace App\Model;
 
 use DateTime;
-use PDO;
 
-final class BookManager
+final class BookManager extends AbstractManager
 {
-    public function __construct(private readonly PDO $pdo)
+    protected function getTableName(): string
     {
+        return 'books';
     }
 
-    /**
-     * @return list<Book>
-     */
-    public function findAll(): array
+    protected function getSearchableColumns(): array
     {
-        $rows = $this->pdo->query('SELECT * FROM books ORDER BY created_at DESC')->fetchAll();
-
-        $books = [];
-        foreach ($rows as $row) {
-            $books[] = $this->createBookFromRow($row);
-        }
-
-        return $books;
+        return ['id', 'user_id'];
     }
 
-    public function findById(int $id): ?Book
+    protected function getDefaultOrderBy(): string
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM books WHERE id = :id');
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch();
-
-        if ($row === false) {
-            return null;
-        }
-
-        return $this->createBookFromRow($row);
+        return 'created_at DESC';
     }
 
-    private function createBookFromRow(array $row): Book
+    protected function createEntityFromRow(array $row): Book
     {
         $book = new Book();
         $book->setId((int) $row['id']);

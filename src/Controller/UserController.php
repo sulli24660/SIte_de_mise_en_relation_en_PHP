@@ -77,7 +77,7 @@ final class UserController
             if (!$this->hasValidCsrfToken()) {
                 $errors->add('form', 'Votre session a expiré. Merci de renvoyer le formulaire.');
             } else {
-                $user = $this->userManager->findByEmail($email);
+                $user = $this->userManager->findOneBy('email', $email);
 
                 $passwordHash = $user?->getPassword() ?? self::DUMMY_PASSWORD_HASH;
                 $isPasswordValid = password_verify($password, $passwordHash);
@@ -134,11 +134,11 @@ final class UserController
             ]
         );
 
-        if (!$errors->has('pseudo') && $this->userManager->pseudoExists($pseudo)) {
+        if (!$errors->has('pseudo') && $this->userManager->exists('pseudo', $pseudo)) {
             $errors->add('pseudo', 'Ce pseudo est déjà pris.');
         }
 
-        if (!$errors->has('email') && $this->userManager->emailExists($email)) {
+        if (!$errors->has('email') && $this->userManager->exists('email', $email)) {
             $errors->add('email', 'Cette adresse e-mail est déjà utilisée.');
         }
 

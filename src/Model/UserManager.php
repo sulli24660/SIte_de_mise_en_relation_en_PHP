@@ -5,46 +5,17 @@ declare(strict_types=1);
 namespace App\Model;
 
 use DateTime;
-use PDO;
 
-final class UserManager
+final class UserManager extends AbstractManager
 {
-    public function __construct(private readonly PDO $pdo)
+    protected function getTableName(): string
     {
+        return 'users';
     }
 
-    public function emailExists(string $email): bool
+    protected function getSearchableColumns(): array
     {
-        $stmt = $this->pdo->prepare('SELECT 1 FROM users WHERE email = :email LIMIT 1');
-        $stmt->execute(['email' => $email]);
-
-        return $stmt->fetch() !== false;
-    }
-
-    public function pseudoExists(string $pseudo): bool
-    {
-        $stmt = $this->pdo->prepare('SELECT 1 FROM users WHERE pseudo = :pseudo LIMIT 1');
-        $stmt->execute(['pseudo' => $pseudo]);
-
-        return $stmt->fetch() !== false;
-    }
-
-    public function findByEmail(string $email): ?User
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT id, pseudo, email, password, avatar, created_at
-             FROM users
-             WHERE email = :email
-             LIMIT 1'
-        );
-        $stmt->execute(['email' => $email]);
-        $row = $stmt->fetch();
-
-        if ($row === false) {
-            return null;
-        }
-
-        return $this->createUserFromRow($row);
+        return ['id', 'email', 'pseudo'];
     }
 
     public function create(User $user): int
@@ -61,7 +32,7 @@ final class UserManager
         return (int) $this->pdo->lastInsertId();
     }
 
-    private function createUserFromRow(array $row): User
+    protected function createEntityFromRow(array $row): User
     {
         $user = new User();
         $user->setId((int) $row['id']);
