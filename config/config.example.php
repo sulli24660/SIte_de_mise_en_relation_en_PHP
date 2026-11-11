@@ -1,6 +1,6 @@
 <?php
 
-// Ceci est un fichier de configuration pour la connexion à la base de données. Vous devez le renommer en config.php et remplir les informations de connexion à votre base de données.
+// Copier ce fichier en config.php, puis renseigner les identifiants de votre base de données.
 
 define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'tomtroc');

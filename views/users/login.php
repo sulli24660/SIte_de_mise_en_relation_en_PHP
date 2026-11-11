@@ -6,7 +6,6 @@
     <?php endif; ?>
 
     <form action="index.php?action=login" method="post">
-        <!-- Jeton anti-CSRF : prouve que le formulaire vient bien de TomTroc. -->
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
 
         <div>
@@ -18,7 +17,6 @@
 
         <div>
             <label for="password">Mot de passe</label>
-            <!-- Pas d'attribut value : le mot de passe n'est jamais réaffiché. -->
             <input type="password" id="password" name="password"
                 required autocomplete="current-password">
         </div>
