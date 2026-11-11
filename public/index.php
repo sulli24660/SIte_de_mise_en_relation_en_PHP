@@ -6,6 +6,7 @@ require dirname(__DIR__) . '/config/config.php';
 require dirname(__DIR__) . '/config/autoload.php';
 
 use App\Exception\NotFoundException;
+use App\Request\Request;
 use App\Service\AuthService;
 use App\Service\CsrfTokenManager;
 use App\Service\Router;
@@ -19,10 +20,8 @@ session_start([
     'use_strict_mode' => true,
 ]);
 
-$action = isset($_GET['action']) && is_string($_GET['action']) ? $_GET['action'] : 'books';
-
 try {
-    (new Router())->dispatch($action, $_GET);
+    (new Router())->dispatch(new Request());
 } catch (NotFoundException $e) {
     http_response_code($e->getCode());
     (new View(new CsrfTokenManager(), new AuthService()))->render('error', ['message' => $e->getMessage()]);

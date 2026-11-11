@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Model\User;
 use App\Model\UserManager;
+use App\Request\Request;
 use App\Service\AuthService;
 use App\Service\CsrfTokenManager;
 use App\Service\View;
@@ -22,6 +23,7 @@ final class UserController
         private readonly View $view,
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly AuthService $authService,
+        private readonly Request $request,
     ) {}
 
     public function register(): void
@@ -30,12 +32,12 @@ final class UserController
         $pseudo = '';
         $email = '';
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $pseudo = trim($this->getPostValue('pseudo'));
-            $email = mb_strtolower(trim($this->getPostValue('email')));
-            $password = $this->getPostValue('password');
+        if ($this->request->isPost()) {
+            $pseudo = $this->request->post('pseudo');
+            $email = mb_strtolower($this->request->post('email'));
+            $password = $this->request->postRaw('password');
 
-            if (!$this->csrfTokenManager->isValid($_POST['csrf_token'] ?? null)) {
+            if (!$this->hasValidCsrfToken()) {
                 $errors = new ErrorBag();
                 $errors->add('form', 'Votre session a expiré. Merci de renvoyer le formulaire.');
             } else {
@@ -67,12 +69,12 @@ final class UserController
         $errors = null;
         $email = '';
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = mb_strtolower(trim($this->getPostValue('email')));
-            $password = $this->getPostValue('password');
+        if ($this->request->isPost()) {
+            $email = mb_strtolower($this->request->post('email'));
+            $password = $this->request->postRaw('password');
             $errors = new ErrorBag();
 
-            if (!$this->csrfTokenManager->isValid($_POST['csrf_token'] ?? null)) {
+            if (!$this->hasValidCsrfToken()) {
                 $errors->add('form', 'Votre session a expiré. Merci de renvoyer le formulaire.');
             } else {
                 $user = $this->userManager->findByEmail($email);
@@ -100,14 +102,17 @@ final class UserController
 
     public function logout(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST'
-            && $this->csrfTokenManager->isValid($_POST['csrf_token'] ?? null)
-        ) {
+        if ($this->request->isPost() && $this->hasValidCsrfToken()) {
             $this->authService->logout();
         }
 
         header('Location: index.php?action=books');
         exit;
+    }
+
+    private function hasValidCsrfToken(): bool
+    {
+        return $this->csrfTokenManager->isValid($this->request->post('csrf_token'));
     }
 
     private function validateRegistration(string $pseudo, string $email, string $password): ErrorBag
@@ -138,12 +143,5 @@ final class UserController
         }
 
         return $errors;
-    }
-
-    private function getPostValue(string $key): string
-    {
-        $value = $_POST[$key] ?? '';
-
-        return is_string($value) ? $value : '';
     }
 }

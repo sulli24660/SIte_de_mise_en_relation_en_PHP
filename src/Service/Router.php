@@ -10,13 +10,16 @@ use App\Exception\NotFoundException;
 use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
 use App\Model\UserManager;
+use App\Request\Request;
 
 final class Router
 {
     private const PROTECTED_ACTIONS = ['account', 'messages'];
 
-    public function dispatch(string $action, array $params = []): void
+    public function dispatch(Request $request): void
     {
+        $action = $request->query('action', 'books');
+
         if (in_array($action, self::PROTECTED_ACTIONS, true)) {
             (new AuthMiddleware(new AuthService()))->handle();
         }
@@ -27,19 +30,19 @@ final class Router
                 break;
 
             case 'book':
-                $this->createBookController()->show((int) ($params['id'] ?? 0));
+                $this->createBookController()->show($request->queryInt('id'));
                 break;
 
             case 'register':
-                $this->createUserController()->register();
+                $this->createUserController($request)->register();
                 break;
 
             case 'login':
-                $this->createUserController()->login();
+                $this->createUserController($request)->login();
                 break;
 
             case 'logout':
-                $this->createUserController()->logout();
+                $this->createUserController($request)->logout();
                 break;
 
             default:
@@ -57,7 +60,7 @@ final class Router
         );
     }
 
-    private function createUserController(): UserController
+    private function createUserController(Request $request): UserController
     {
         $pdo = DBManager::getInstance()->getPDO();
         $csrfTokenManager = new CsrfTokenManager();
@@ -68,6 +71,7 @@ final class Router
             new View($csrfTokenManager, $authService),
             $csrfTokenManager,
             $authService,
+            $request,
         );
     }
 }
