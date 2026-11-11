@@ -63,11 +63,13 @@ final class Router
     private function createUserController(Request $request): UserController
     {
         $pdo = DBManager::getInstance()->getPDO();
+        $userManager = new UserManager($pdo);
         $csrfTokenManager = new CsrfTokenManager();
         $authService = new AuthService();
 
         return new UserController(
-            new UserManager($pdo),
+            $userManager,
+            new UserService($userManager),
             new View($csrfTokenManager, $authService),
             $csrfTokenManager,
             $authService,

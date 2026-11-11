@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\User;
 use App\Model\UserManager;
 use App\Request\Request;
 use App\Service\AuthService;
 use App\Service\CsrfTokenManager;
+use App\Service\UserService;
 use App\Service\View;
 use App\Validator\ErrorBag;
 use App\Validator\Validator;
 
 final class UserController
 {
-    // Vérifié quand l'e-mail est inconnu : le temps de réponse ne révèle pas si un compte existe.
-    private const DUMMY_PASSWORD_HASH = '$2y$10$fLAenOmNqh9NCbWm2ESTAuGgSPqH.AWmHjiP4IlZ1vQOH9Lhc2Uhq';
-
     public function __construct(
         private readonly UserManager $userManager,
+        private readonly UserService $userService,
         private readonly View $view,
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly AuthService $authService,
@@ -44,12 +42,7 @@ final class UserController
                 $errors = $this->validateRegistration($pseudo, $email, $password);
 
                 if ($errors->isEmpty()) {
-                    $user = new User();
-                    $user->setPseudo($pseudo);
-                    $user->setEmail($email);
-                    $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
-
-                    $this->userManager->create($user);
+                    $this->userService->register($pseudo, $email, $password);
 
                     header('Location: index.php?action=books');
                     exit;
@@ -77,12 +70,9 @@ final class UserController
             if (!$this->hasValidCsrfToken()) {
                 $errors->add('form', 'Votre session a expiré. Merci de renvoyer le formulaire.');
             } else {
-                $user = $this->userManager->findOneBy('email', $email);
+                $user = $this->userService->authenticate($email, $password);
 
-                $passwordHash = $user?->getPassword() ?? self::DUMMY_PASSWORD_HASH;
-                $isPasswordValid = password_verify($password, $passwordHash);
-
-                if ($user === null || !$isPasswordValid) {
+                if ($user === null) {
                     $errors->add('form', 'Identifiants incorrects.');
                 } else {
                     $this->authService->login($user->getId());
