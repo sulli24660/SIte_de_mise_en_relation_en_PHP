@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use InvalidArgumentException;
 use PDO;
 
 abstract class AbstractManager
@@ -14,11 +13,6 @@ abstract class AbstractManager
     }
 
     abstract protected function getTableName(): string;
-
-    /**
-     * @return list<string>
-     */
-    abstract protected function getSearchableColumns(): array;
 
     abstract protected function createEntityFromRow(array $row): object;
 
@@ -42,10 +36,9 @@ abstract class AbstractManager
         return $this->findOneBy('id', $id);
     }
 
+    // findOneBy() et exists() insèrent $column tel quel dans le SQL : il doit toujours être écrit en dur, jamais venir de l'utilisateur.
     public function findOneBy(string $column, string|int $value): ?object
     {
-        $this->assertColumnIsSearchable($column);
-
         $stmt = $this->pdo->prepare(
             sprintf('SELECT * FROM %s WHERE %s = :value LIMIT 1', $this->getTableName(), $column)
         );
@@ -57,21 +50,11 @@ abstract class AbstractManager
 
     public function exists(string $column, string|int $value): bool
     {
-        $this->assertColumnIsSearchable($column);
-
         $stmt = $this->pdo->prepare(
             sprintf('SELECT 1 FROM %s WHERE %s = :value LIMIT 1', $this->getTableName(), $column)
         );
         $stmt->execute(['value' => $value]);
 
         return $stmt->fetch() !== false;
-    }
-
-    // Un nom de colonne ne peut pas passer par prepare() : seule une liste blanche empêche l'injection SQL.
-    private function assertColumnIsSearchable(string $column): void
-    {
-        if (!in_array($column, $this->getSearchableColumns(), true)) {
-            throw new InvalidArgumentException("Colonne non autorisée pour la recherche : « $column ».");
-        }
     }
 }

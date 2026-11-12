@@ -13,11 +13,6 @@ final class BookManager extends AbstractManager
         return 'books';
     }
 
-    protected function getSearchableColumns(): array
-    {
-        return ['id', 'user_id'];
-    }
-
     protected function getDefaultOrderBy(): string
     {
         return 'created_at DESC';

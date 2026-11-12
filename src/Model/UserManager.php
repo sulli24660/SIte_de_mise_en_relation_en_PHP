@@ -13,11 +13,6 @@ final class UserManager extends AbstractManager
         return 'users';
     }
 
-    protected function getSearchableColumns(): array
-    {
-        return ['id', 'email', 'pseudo'];
-    }
-
     public function create(User $user): int
     {
         $stmt = $this->pdo->prepare(
