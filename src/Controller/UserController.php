@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\UserManager;
 use App\Request\Request;
 use App\Service\AuthService;
 use App\Service\CsrfTokenManager;
@@ -16,7 +15,7 @@ use App\Validator\Validator;
 final class UserController
 {
     public function __construct(
-        private readonly UserManager $userManager,
+        private readonly Validator $validator,
         private readonly UserService $userService,
         private readonly View $view,
         private readonly CsrfTokenManager $csrfTokenManager,
@@ -107,31 +106,23 @@ final class UserController
 
     private function validateRegistration(string $pseudo, string $email, string $password): ErrorBag
     {
-        $errors = Validator::validate(
+        return $this->validator->validate(
             [
                 'pseudo' => $pseudo,
                 'email' => $email,
                 'password' => $password,
             ],
             [
-                'pseudo' => ['required', 'min:3', 'max:50', 'regex:/^[a-zA-Z0-9_]+$/D'],
-                'email' => ['required', 'max:255', 'email'],
+                'pseudo' => ['required', 'min:3', 'max:50', 'regex:/^[a-zA-Z0-9_]+$/D', 'unique:pseudo'],
+                'email' => ['required', 'max:255', 'email', 'unique:email'],
                 // bcrypt ignore tout ce qui dépasse 72 octets.
                 'password' => ['required', 'min:8', 'maxbytes:72'],
             ],
             [
                 'pseudo.regex' => 'Le pseudo ne peut contenir que des lettres, des chiffres et des underscores.',
+                'pseudo.unique' => 'Ce pseudo est déjà pris.',
+                'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
             ]
         );
-
-        if (!$errors->has('pseudo') && $this->userManager->exists('pseudo', $pseudo)) {
-            $errors->add('pseudo', 'Ce pseudo est déjà pris.');
-        }
-
-        if (!$errors->has('email') && $this->userManager->exists('email', $email)) {
-            $errors->add('email', 'Cette adresse e-mail est déjà utilisée.');
-        }
-
-        return $errors;
     }
 }

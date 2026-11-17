@@ -11,6 +11,7 @@ use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
 use App\Model\UserManager;
 use App\Request\Request;
+use App\Validator\Validator;
 
 final class Router
 {
@@ -70,7 +71,7 @@ final class Router
         $userManager = new UserManager($pdo);
 
         return new UserController(
-            $userManager,
+            new Validator($userManager),
             new UserService($userManager),
             $this->view,
             $this->csrfTokenManager,
