@@ -6,7 +6,9 @@ namespace App\Validator;
 
 class ErrorBag
 {
-    private array $errors = [];
+    public function __construct(private array $errors = [])
+    {
+    }
 
     public function add(string $field, string $message): void
     {
