@@ -16,12 +16,19 @@ final class Router
 {
     private const PROTECTED_ACTIONS = ['account', 'messages'];
 
+    public function __construct(
+        private readonly CsrfTokenManager $csrfTokenManager,
+        private readonly AuthService $authService,
+        private readonly View $view,
+    ) {
+    }
+
     public function dispatch(Request $request): void
     {
         $action = $request->query('action', 'books');
 
         if (in_array($action, self::PROTECTED_ACTIONS, true)) {
-            (new AuthMiddleware(new AuthService()))->handle();
+            (new AuthMiddleware($this->authService))->handle();
         }
 
         switch ($action) {
@@ -54,25 +61,20 @@ final class Router
     {
         $pdo = DBManager::getInstance()->getPDO();
 
-        return new BookController(
-            new BookManager($pdo),
-            new View(new CsrfTokenManager(), new AuthService()),
-        );
+        return new BookController(new BookManager($pdo), $this->view);
     }
 
     private function createUserController(Request $request): UserController
     {
         $pdo = DBManager::getInstance()->getPDO();
         $userManager = new UserManager($pdo);
-        $csrfTokenManager = new CsrfTokenManager();
-        $authService = new AuthService();
 
         return new UserController(
             $userManager,
             new UserService($userManager),
-            new View($csrfTokenManager, $authService),
-            $csrfTokenManager,
-            $authService,
+            $this->view,
+            $this->csrfTokenManager,
+            $this->authService,
             $request,
         );
     }
