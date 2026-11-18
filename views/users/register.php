@@ -1,7 +1,7 @@
 <section>
     <h1>Inscription</h1>
 
-    <?php if ($errors?->has('form')): ?>
+    <?php if ($errors->has('form')): ?>
         <p class="form-error" role="alert"><?= htmlspecialchars($errors->get('form')) ?></p>
     <?php endif; ?>
 
@@ -11,9 +11,9 @@
         <div>
             <label for="pseudo">Pseudo</label>
             <input type="text" id="pseudo" name="pseudo"
-                value="<?= htmlspecialchars($pseudo) ?>"
+                value="<?= htmlspecialchars($old['pseudo'] ?? '') ?>"
                 required minlength="3" maxlength="50" autocomplete="username">
-            <?php if ($errors?->has('pseudo')): ?>
+            <?php if ($errors->has('pseudo')): ?>
                 <p class="form-error"><?= htmlspecialchars($errors->get('pseudo')) ?></p>
             <?php endif; ?>
         </div>
@@ -21,9 +21,9 @@
         <div>
             <label for="email">Adresse e-mail</label>
             <input type="email" id="email" name="email"
-                value="<?= htmlspecialchars($email) ?>"
+                value="<?= htmlspecialchars($old['email'] ?? '') ?>"
                 required maxlength="255" autocomplete="email">
-            <?php if ($errors?->has('email')): ?>
+            <?php if ($errors->has('email')): ?>
                 <p class="form-error"><?= htmlspecialchars($errors->get('email')) ?></p>
             <?php endif; ?>
         </div>
@@ -32,7 +32,7 @@
             <label for="password">Mot de passe</label>
             <input type="password" id="password" name="password"
                 required minlength="8" autocomplete="new-password">
-            <?php if ($errors?->has('password')): ?>
+            <?php if ($errors->has('password')): ?>
                 <p class="form-error"><?= htmlspecialchars($errors->get('password')) ?></p>
             <?php endif; ?>
         </div>

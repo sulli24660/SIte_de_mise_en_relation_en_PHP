@@ -10,6 +10,7 @@ use App\Exception\NotFoundException;
 use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
 use App\Model\UserManager;
+use App\Request\RegisterRequest;
 use App\Request\Request;
 use App\Validator\Validator;
 
@@ -42,7 +43,7 @@ final class Router
                 break;
 
             case 'register':
-                $this->createUserController($request)->register();
+                $this->createUserController($request)->register($this->createRegisterRequest());
                 break;
 
             case 'login':
@@ -60,23 +61,30 @@ final class Router
 
     private function createBookController(): BookController
     {
-        $pdo = DBManager::getInstance()->getPDO();
-
-        return new BookController(new BookManager($pdo), $this->view);
+        return new BookController(new BookManager($this->getPdo()), $this->view);
     }
 
     private function createUserController(Request $request): UserController
     {
-        $pdo = DBManager::getInstance()->getPDO();
-        $userManager = new UserManager($pdo);
-
         return new UserController(
-            new Validator($userManager),
-            new UserService($userManager),
+            new UserService(new UserManager($this->getPdo())),
             $this->view,
             $this->csrfTokenManager,
             $this->authService,
             $request,
         );
+    }
+
+    private function createRegisterRequest(): RegisterRequest
+    {
+        return new RegisterRequest(
+            new Validator(new UserManager($this->getPdo())),
+            $this->csrfTokenManager,
+        );
+    }
+
+    private function getPdo(): \PDO
+    {
+        return DBManager::getInstance()->getPDO();
     }
 }

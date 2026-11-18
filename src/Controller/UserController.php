@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Request\RegisterRequest;
 use App\Request\Request;
 use App\Service\AuthService;
 use App\Service\CsrfTokenManager;
 use App\Service\UserService;
 use App\Service\View;
 use App\Validator\ErrorBag;
-use App\Validator\Validator;
 
 final class UserController
 {
     public function __construct(
-        private readonly Validator $validator,
         private readonly UserService $userService,
         private readonly View $view,
         private readonly CsrfTokenManager $csrfTokenManager,
@@ -23,37 +22,18 @@ final class UserController
         private readonly Request $request,
     ) {}
 
-    public function register(): void
+    public function register(RegisterRequest $registerRequest): void
     {
-        $errors = null;
-        $pseudo = '';
-        $email = '';
+        if ($registerRequest->isPost()) {
+            $data = $registerRequest->validate();
 
-        if ($this->request->isPost()) {
-            $pseudo = $this->request->post('pseudo');
-            $email = mb_strtolower($this->request->post('email'));
-            $password = $this->request->postRaw('password');
+            $this->userService->register($data['pseudo'], $data['email'], $data['password']);
 
-            if (!$this->hasValidCsrfToken()) {
-                $errors = new ErrorBag();
-                $errors->add('form', 'Votre session a expiré. Merci de renvoyer le formulaire.');
-            } else {
-                $errors = $this->validateRegistration($pseudo, $email, $password);
-
-                if ($errors->isEmpty()) {
-                    $this->userService->register($pseudo, $email, $password);
-
-                    header('Location: index.php?action=books');
-                    exit;
-                }
-            }
+            header('Location: index.php?action=books');
+            exit;
         }
 
-        $this->view->render('users/register', [
-            'errors' => $errors,
-            'pseudo' => $pseudo,
-            'email' => $email,
-        ]);
+        $this->view->render('users/register');
     }
 
     public function login(): void
@@ -102,27 +82,5 @@ final class UserController
     private function hasValidCsrfToken(): bool
     {
         return $this->csrfTokenManager->isValid($this->request->post('csrf_token'));
-    }
-
-    private function validateRegistration(string $pseudo, string $email, string $password): ErrorBag
-    {
-        return $this->validator->validate(
-            [
-                'pseudo' => $pseudo,
-                'email' => $email,
-                'password' => $password,
-            ],
-            [
-                'pseudo' => ['required', 'min:3', 'max:50', 'regex:/^[a-zA-Z0-9_]+$/D', 'unique:pseudo'],
-                'email' => ['required', 'max:255', 'email', 'unique:email'],
-                // bcrypt ignore tout ce qui dépasse 72 octets.
-                'password' => ['required', 'min:8', 'maxbytes:72'],
-            ],
-            [
-                'pseudo.regex' => 'Le pseudo ne peut contenir que des lettres, des chiffres et des underscores.',
-                'pseudo.unique' => 'Ce pseudo est déjà pris.',
-                'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
-            ]
-        );
     }
 }
