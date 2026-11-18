@@ -13,6 +13,9 @@
 <body>
      <?php require __DIR__ . '/partials/_header.php'; ?>
     <main>
+        <?php if ($success !== null): ?>
+            <p class="flash-success" role="status"><?= htmlspecialchars($success) ?></p>
+        <?php endif; ?>
         <?php require $templatePath ?>
     </main>
     <?php require __DIR__ . '/partials/_footer.php'; ?>

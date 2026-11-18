@@ -8,6 +8,50 @@
     <p><?= count($books) ?> livre<?= count($books) > 1 ? 's' : '' ?></p>
 </section>
 
+<section class="account-settings">
+    <h2>Vos informations personnelles</h2>
+
+    <?php if ($errors->has('form')): ?>
+        <p class="form-error" role="alert"><?= htmlspecialchars($errors->get('form')) ?></p>
+    <?php endif; ?>
+
+    <form action="index.php?action=account" method="post">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+
+        <div>
+            <label for="email">Adresse e-mail</label>
+            <input type="email" id="email" name="email"
+                value="<?= htmlspecialchars($old['email'] ?? $user->getEmail()) ?>"
+                required maxlength="255" autocomplete="email">
+            <?php if ($errors->has('email')): ?>
+                <p class="form-error"><?= htmlspecialchars($errors->get('email')) ?></p>
+            <?php endif; ?>
+        </div>
+
+        <div>
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password"
+                minlength="8" autocomplete="new-password" aria-describedby="password-help">
+            <p id="password-help">Laissez vide pour conserver votre mot de passe actuel.</p>
+            <?php if ($errors->has('password')): ?>
+                <p class="form-error"><?= htmlspecialchars($errors->get('password')) ?></p>
+            <?php endif; ?>
+        </div>
+
+        <div>
+            <label for="pseudo">Pseudo</label>
+            <input type="text" id="pseudo" name="pseudo"
+                value="<?= htmlspecialchars($old['pseudo'] ?? $user->getPseudo()) ?>"
+                required minlength="3" maxlength="50" autocomplete="username">
+            <?php if ($errors->has('pseudo')): ?>
+                <p class="form-error"><?= htmlspecialchars($errors->get('pseudo')) ?></p>
+            <?php endif; ?>
+        </div>
+
+        <button type="submit">Enregistrer</button>
+    </form>
+</section>
+
 <section class="account-library">
     <h2>Ma bibliothèque</h2>
 

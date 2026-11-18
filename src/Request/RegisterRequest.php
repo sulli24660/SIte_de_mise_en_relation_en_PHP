@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Request;
 
-final class RegisterRequest extends FormRequest
+class RegisterRequest extends FormRequest
 {
     public function data(): array
     {

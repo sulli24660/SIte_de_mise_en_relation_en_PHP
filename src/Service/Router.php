@@ -14,6 +14,7 @@ use App\Model\UserManager;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
 use App\Request\Request;
+use App\Request\UpdateAccountRequest;
 use App\Validator\Validator;
 
 final class Router
@@ -23,6 +24,7 @@ final class Router
     public function __construct(
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly AuthService $authService,
+        private readonly Flash $flash,
         private readonly View $view,
     ) {
     }
@@ -57,7 +59,9 @@ final class Router
                 break;
 
             case 'account':
-                $this->createAccountController()->show();
+                $request->isPost()
+                    ? $this->createAccountController()->update($this->createUpdateAccountRequest())
+                    : $this->createAccountController()->show();
                 break;
 
             default:
@@ -83,11 +87,23 @@ final class Router
 
     private function createAccountController(): AccountController
     {
+        $userManager = new UserManager($this->getPdo());
+
         return new AccountController(
-            new UserManager($this->getPdo()),
+            $userManager,
             new BookManager($this->getPdo()),
+            new UserService($userManager),
             $this->authService,
+            $this->flash,
             $this->view,
+        );
+    }
+
+    private function createUpdateAccountRequest(): UpdateAccountRequest
+    {
+        return new UpdateAccountRequest(
+            new Validator(new UserManager($this->getPdo()), $this->authService->getUserId()),
+            $this->csrfTokenManager,
         );
     }
 

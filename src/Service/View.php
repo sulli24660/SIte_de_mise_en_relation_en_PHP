@@ -20,6 +20,7 @@ final class View
         $data += [
             'errors' => new ErrorBag($this->flash->pull('errors', [])),
             'old' => $this->flash->pull('old', []),
+            'success' => $this->flash->pull('success'),
         ];
         $data['isLoggedIn'] = $this->authService->isLoggedIn();
         $data['csrfToken'] = $this->csrfTokenManager->getToken();

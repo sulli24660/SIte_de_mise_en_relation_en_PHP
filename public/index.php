@@ -29,7 +29,7 @@ $authService = new AuthService();
 $view = new View($csrfTokenManager, $authService, $flash);
 
 try {
-    (new Router($csrfTokenManager, $authService, $view))->dispatch($request);
+    (new Router($csrfTokenManager, $authService, $flash, $view))->dispatch($request);
 } catch (ValidationException $e) {
     $flash->put('errors', $e->errors->all());
     $flash->put('old', $e->old);
