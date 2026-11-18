@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Exception\NotFoundException;
 use App\Model\User;
 use App\Model\UserManager;
 
@@ -24,6 +25,24 @@ final class UserService
         $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
 
         return $this->userManager->create($user);
+    }
+
+    public function updateAccount(int $userId, string $pseudo, string $email, string $newPassword): void
+    {
+        $user = $this->userManager->findById($userId);
+
+        if ($user === null) {
+            throw new NotFoundException('Ce compte n\'existe plus.');
+        }
+
+        $user->setPseudo($pseudo);
+        $user->setEmail($email);
+
+        if ($newPassword !== '') {
+            $user->setPassword(password_hash($newPassword, PASSWORD_DEFAULT));
+        }
+
+        $this->userManager->update($user);
     }
 
     public function authenticate(string $email, string $password): ?User

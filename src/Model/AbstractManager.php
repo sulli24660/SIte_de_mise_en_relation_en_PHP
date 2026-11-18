@@ -60,12 +60,18 @@ abstract class AbstractManager
         return $this->createEntitiesFromRows($stmt->fetchAll());
     }
 
-    public function exists(string $column, string|int $value): bool
+    public function exists(string $column, string|int $value, ?int $exceptId = null): bool
     {
-        $stmt = $this->pdo->prepare(
-            sprintf('SELECT 1 FROM %s WHERE %s = :value LIMIT 1', $this->getTableName(), $column)
-        );
-        $stmt->execute(['value' => $value]);
+        $sql = sprintf('SELECT 1 FROM %s WHERE %s = :value', $this->getTableName(), $column);
+        $params = ['value' => $value];
+
+        if ($exceptId !== null) {
+            $sql .= ' AND id != :exceptId';
+            $params['exceptId'] = $exceptId;
+        }
+
+        $stmt = $this->pdo->prepare($sql . ' LIMIT 1');
+        $stmt->execute($params);
 
         return $stmt->fetch() !== false;
     }

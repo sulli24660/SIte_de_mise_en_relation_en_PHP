@@ -27,6 +27,19 @@ final class UserManager extends AbstractManager
         return (int) $this->pdo->lastInsertId();
     }
 
+    public function update(User $user): void
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE users SET pseudo = :pseudo, email = :email, password = :password WHERE id = :id'
+        );
+        $stmt->execute([
+            'pseudo' => $user->getPseudo(),
+            'email' => $user->getEmail(),
+            'password' => $user->getPassword(),
+            'id' => $user->getId(),
+        ]);
+    }
+
     protected function createEntityFromRow(array $row): User
     {
         $user = new User();

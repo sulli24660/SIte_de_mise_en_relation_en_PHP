@@ -20,8 +20,10 @@ final class Validator
         'unique' => 'Cette valeur est déjà utilisée.',
     ];
 
-    public function __construct(private readonly ?AbstractManager $manager = null)
-    {
+    public function __construct(
+        private readonly ?AbstractManager $manager = null,
+        private readonly ?int $uniqueExceptId = null,
+    ) {
     }
 
     public function validate(array $data, array $rules, array $messages = []): ErrorBag
@@ -61,7 +63,7 @@ final class Validator
             'maxbytes' => strlen($value) <= (int) $param,
             'email' => filter_var($value, FILTER_VALIDATE_EMAIL) !== false,
             'regex' => preg_match($param, $value) === 1,
-            'unique' => !$this->getManager()->exists($param, $value),
+            'unique' => !$this->getManager()->exists($param, $value, $this->uniqueExceptId),
             default => throw new InvalidArgumentException("Règle de validation inconnue : « $rule »."),
         };
     }
