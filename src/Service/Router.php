@@ -10,6 +10,7 @@ use App\Exception\NotFoundException;
 use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
 use App\Model\UserManager;
+use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
 use App\Request\Request;
 use App\Validator\Validator;
@@ -47,7 +48,7 @@ final class Router
                 break;
 
             case 'login':
-                $this->createUserController($request)->login();
+                $this->createUserController($request)->login($this->createLoginRequest());
                 break;
 
             case 'logout':
@@ -81,6 +82,11 @@ final class Router
             new Validator(new UserManager($this->getPdo())),
             $this->csrfTokenManager,
         );
+    }
+
+    private function createLoginRequest(): LoginRequest
+    {
+        return new LoginRequest(new Validator(), $this->csrfTokenManager);
     }
 
     private function getPdo(): \PDO

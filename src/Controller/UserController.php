@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Exception\ValidationException;
+use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
 use App\Request\Request;
 use App\Service\AuthService;
@@ -36,37 +38,28 @@ final class UserController
         $this->view->render('users/register');
     }
 
-    public function login(): void
+    public function login(LoginRequest $loginRequest): void
     {
-        $errors = null;
-        $email = '';
+        if ($loginRequest->isPost()) {
+            $data = $loginRequest->validate();
 
-        if ($this->request->isPost()) {
-            $email = mb_strtolower($this->request->post('email'));
-            $password = $this->request->postRaw('password');
-            $errors = new ErrorBag();
+            $user = $this->userService->authenticate($data['email'], $data['password']);
 
-            if (!$this->hasValidCsrfToken()) {
-                $errors->add('form', 'Votre session a expiré. Merci de renvoyer le formulaire.');
-            } else {
-                $user = $this->userService->authenticate($email, $password);
-
-                if ($user === null) {
-                    $errors->add('form', 'Identifiants incorrects.');
-                } else {
-                    $this->authService->login($user->getId());
-                    $this->csrfTokenManager->regenerate();
-
-                    header('Location: index.php?action=books');
-                    exit;
-                }
+            if ($user === null) {
+                throw new ValidationException(
+                    new ErrorBag(['form' => 'Identifiants incorrects.']),
+                    ['email' => $data['email']],
+                );
             }
+
+            $this->authService->login($user->getId());
+            $this->csrfTokenManager->regenerate();
+
+            header('Location: index.php?action=books');
+            exit;
         }
 
-        $this->view->render('users/login', [
-            'errors' => $errors,
-            'email' => $email,
-        ]);
+        $this->view->render('users/login');
     }
 
     public function logout(): void
