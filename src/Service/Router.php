@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Controller\AccountController;
 use App\Controller\BookController;
 use App\Controller\UserController;
 use App\Exception\NotFoundException;
@@ -55,6 +56,10 @@ final class Router
                 $this->createUserController($request)->logout();
                 break;
 
+            case 'account':
+                $this->createAccountController()->show();
+                break;
+
             default:
                 throw new NotFoundException();
         }
@@ -73,6 +78,16 @@ final class Router
             $this->csrfTokenManager,
             $this->authService,
             $request,
+        );
+    }
+
+    private function createAccountController(): AccountController
+    {
+        return new AccountController(
+            new UserManager($this->getPdo()),
+            new BookManager($this->getPdo()),
+            $this->authService,
+            $this->view,
         );
     }
 

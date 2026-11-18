@@ -25,10 +25,7 @@ abstract class AbstractManager
     {
         $sql = sprintf('SELECT * FROM %s ORDER BY %s', $this->getTableName(), $this->getDefaultOrderBy());
 
-        return array_map(
-            fn (array $row): object => $this->createEntityFromRow($row),
-            $this->pdo->query($sql)->fetchAll()
-        );
+        return $this->createEntitiesFromRows($this->pdo->query($sql)->fetchAll());
     }
 
     public function findById(int $id): ?object
@@ -36,7 +33,7 @@ abstract class AbstractManager
         return $this->findOneBy('id', $id);
     }
 
-    // findOneBy() et exists() insèrent $column tel quel dans le SQL : il doit toujours être écrit en dur, jamais venir de l'utilisateur.
+    // findOneBy(), findAllBy() et exists() insèrent $column tel quel dans le SQL : il doit toujours être écrit en dur, jamais venir de l'utilisateur.
     public function findOneBy(string $column, string|int $value): ?object
     {
         $stmt = $this->pdo->prepare(
@@ -48,6 +45,21 @@ abstract class AbstractManager
         return $row === false ? null : $this->createEntityFromRow($row);
     }
 
+    public function findAllBy(string $column, string|int $value): array
+    {
+        $stmt = $this->pdo->prepare(
+            sprintf(
+                'SELECT * FROM %s WHERE %s = :value ORDER BY %s',
+                $this->getTableName(),
+                $column,
+                $this->getDefaultOrderBy()
+            )
+        );
+        $stmt->execute(['value' => $value]);
+
+        return $this->createEntitiesFromRows($stmt->fetchAll());
+    }
+
     public function exists(string $column, string|int $value): bool
     {
         $stmt = $this->pdo->prepare(
@@ -56,5 +68,10 @@ abstract class AbstractManager
         $stmt->execute(['value' => $value]);
 
         return $stmt->fetch() !== false;
+    }
+
+    private function createEntitiesFromRows(array $rows): array
+    {
+        return array_map(fn (array $row): object => $this->createEntityFromRow($row), $rows);
     }
 }
