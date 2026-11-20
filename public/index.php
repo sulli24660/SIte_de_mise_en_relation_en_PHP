@@ -8,31 +8,25 @@ require dirname(__DIR__) . '/config/autoload.php';
 use App\Exception\NotFoundException;
 use App\Exception\ValidationException;
 use App\Request\Request;
-use App\Service\AuthService;
-use App\Service\CsrfTokenManager;
-use App\Service\Flash;
+use App\Request\Session;
+use App\Service\Container;
 use App\Service\Router;
 use App\Service\View;
 
-session_start([
-    'cookie_httponly' => true,
-    'cookie_samesite' => 'Lax',
-    // Actif seulement en HTTPS, sinon la session ne fonctionnerait pas en local (php -S).
-    'cookie_secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
-    'use_strict_mode' => true,
-]);
+/** @var Container $container */
+$container = require dirname(__DIR__) . '/config/container.php';
 
-$request = new Request();
-$flash = new Flash();
-$csrfTokenManager = new CsrfTokenManager();
-$authService = new AuthService();
-$view = new View($csrfTokenManager, $authService, $flash);
+$session = $container->get(Session::class);
+$session->start();
+
+$request = $container->get(Request::class);
+$view = $container->get(View::class);
 
 try {
-    (new Router($csrfTokenManager, $authService, $flash, $view))->dispatch($request);
+    $container->get(Router::class)->dispatch($request);
 } catch (ValidationException $e) {
-    $flash->put('errors', $e->errors->all());
-    $flash->put('old', $e->old);
+    $session->flash('errors', $e->errors->all());
+    $session->flash('old', $e->old);
     header('Location: index.php?action=' . rawurlencode($request->query('action')), true, 303);
     exit;
 } catch (NotFoundException $e) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Request\Session;
 use App\Validator\ErrorBag;
 
 final class View
@@ -11,16 +12,16 @@ final class View
     public function __construct(
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly AuthService $authService,
-        private readonly Flash $flash,
+        private readonly Session $session,
     ) {
     }
 
     public function render(string $view, array $data = []): void
     {
         $data += [
-            'errors' => new ErrorBag($this->flash->pull('errors', [])),
-            'old' => $this->flash->pull('old', []),
-            'success' => $this->flash->pull('success'),
+            'errors' => new ErrorBag($this->session->pullFlash('errors', [])),
+            'old' => $this->session->pullFlash('old', []),
+            'success' => $this->session->pullFlash('success'),
         ];
         $data['isLoggedIn'] = $this->authService->isLoggedIn();
         $data['csrfToken'] = $this->csrfTokenManager->getToken();

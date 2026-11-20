@@ -9,24 +9,19 @@ use App\Controller\BookController;
 use App\Controller\UserController;
 use App\Exception\NotFoundException;
 use App\Middleware\AuthMiddleware;
-use App\Model\BookManager;
-use App\Model\UserManager;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
 use App\Request\Request;
 use App\Request\UpdateAccountRequest;
-use App\Validator\Validator;
 
 final class Router
 {
     private const PROTECTED_ACTIONS = ['account', 'messages'];
 
     public function __construct(
-        private readonly CsrfTokenManager $csrfTokenManager,
-        private readonly AuthService $authService,
-        private readonly Flash $flash,
-        private readonly View $view,
-    ) {
+        private readonly Container $container
+    )
+    {
     }
 
     public function dispatch(Request $request): void
@@ -34,94 +29,38 @@ final class Router
         $action = $request->query('action', 'books');
 
         if (in_array($action, self::PROTECTED_ACTIONS, true)) {
-            (new AuthMiddleware($this->authService))->handle();
+            $this->container->get(AuthMiddleware::class)->handle();
         }
 
         switch ($action) {
             case 'books':
-                $this->createBookController()->index();
+                $this->container->get(BookController::class)->index();
                 break;
 
             case 'book':
-                $this->createBookController()->show($request->queryInt('id'));
+                $this->container->get(BookController::class)->show($request->queryInt('id'));
                 break;
 
             case 'register':
-                $this->createUserController($request)->register($this->createRegisterRequest());
+                $this->container->get(UserController::class)->register($this->container->get(RegisterRequest::class));
                 break;
 
             case 'login':
-                $this->createUserController($request)->login($this->createLoginRequest());
+                $this->container->get(UserController::class)->login($this->container->get(LoginRequest::class));
                 break;
 
             case 'logout':
-                $this->createUserController($request)->logout();
+                $this->container->get(UserController::class)->logout();
                 break;
 
             case 'account':
                 $request->isPost()
-                    ? $this->createAccountController()->update($this->createUpdateAccountRequest())
-                    : $this->createAccountController()->show();
+                    ? $this->container->get(AccountController::class)->update($this->container->get(UpdateAccountRequest::class))
+                    : $this->container->get(AccountController::class)->show();
                 break;
 
             default:
                 throw new NotFoundException();
         }
-    }
-
-    private function createBookController(): BookController
-    {
-        return new BookController(new BookManager($this->getPdo()), $this->view);
-    }
-
-    private function createUserController(Request $request): UserController
-    {
-        return new UserController(
-            new UserService(new UserManager($this->getPdo())),
-            $this->view,
-            $this->csrfTokenManager,
-            $this->authService,
-            $request,
-        );
-    }
-
-    private function createAccountController(): AccountController
-    {
-        $userManager = new UserManager($this->getPdo());
-
-        return new AccountController(
-            $userManager,
-            new BookManager($this->getPdo()),
-            new UserService($userManager),
-            $this->authService,
-            $this->flash,
-            $this->view,
-        );
-    }
-
-    private function createUpdateAccountRequest(): UpdateAccountRequest
-    {
-        return new UpdateAccountRequest(
-            new Validator(new UserManager($this->getPdo()), $this->authService->getUserId()),
-            $this->csrfTokenManager,
-        );
-    }
-
-    private function createRegisterRequest(): RegisterRequest
-    {
-        return new RegisterRequest(
-            new Validator(new UserManager($this->getPdo())),
-            $this->csrfTokenManager,
-        );
-    }
-
-    private function createLoginRequest(): LoginRequest
-    {
-        return new LoginRequest(new Validator(), $this->csrfTokenManager);
-    }
-
-    private function getPdo(): \PDO
-    {
-        return DBManager::getInstance()->getPDO();
     }
 }

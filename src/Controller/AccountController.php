@@ -7,9 +7,9 @@ namespace App\Controller;
 use App\Exception\NotFoundException;
 use App\Model\BookManager;
 use App\Model\UserManager;
+use App\Request\Session;
 use App\Request\UpdateAccountRequest;
 use App\Service\AuthService;
-use App\Service\Flash;
 use App\Service\UserService;
 use App\Service\View;
 
@@ -20,7 +20,7 @@ final class AccountController
         private readonly BookManager $bookManager,
         private readonly UserService $userService,
         private readonly AuthService $authService,
-        private readonly Flash $flash,
+        private readonly Session $session,
         private readonly View $view,
     ) {
     }
@@ -50,7 +50,7 @@ final class AccountController
             $data['password'],
         );
 
-        $this->flash->put('success', 'Vos informations ont été mises à jour.');
+        $this->session->flash('success', 'Vos informations ont été mises à jour.');
 
         header('Location: index.php?action=account');
         exit;

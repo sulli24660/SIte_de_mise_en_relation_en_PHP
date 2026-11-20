@@ -22,6 +22,7 @@ final class UserController
         private readonly CsrfTokenManager $csrfTokenManager,
         private readonly AuthService $authService,
         private readonly Request $request,
+        private readonly ErrorBag $errorBag
     ) {}
 
     public function register(RegisterRequest $registerRequest): void

@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Request\Session;
+
 final class AuthService
 {
     private const SESSION_KEY = 'user_id';
+
+    public function __construct(private readonly Session $session)
+    {
+    }
 
     public function isLoggedIn(): bool
     {
@@ -15,7 +21,7 @@ final class AuthService
 
     public function getUserId(): ?int
     {
-        $userId = $_SESSION[self::SESSION_KEY] ?? null;
+        $userId = $this->session->get(self::SESSION_KEY);
 
         return is_int($userId) ? $userId : null;
     }
@@ -23,25 +29,13 @@ final class AuthService
     public function login(int $userId): void
     {
         // Nouvel identifiant de session à la connexion : protège contre la fixation de session.
-        session_regenerate_id(true);
+        $this->session->regenerate();
 
-        $_SESSION[self::SESSION_KEY] = $userId;
+        $this->session->set(self::SESSION_KEY, $userId);
     }
 
     public function logout(): void
     {
-        $_SESSION = [];
-
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', [
-            'expires' => time() - 3600,
-            'path' => $params['path'],
-            'domain' => $params['domain'],
-            'secure' => $params['secure'],
-            'httponly' => $params['httponly'],
-            'samesite' => $params['samesite'],
-        ]);
-
-        session_destroy();
+        $this->session->destroy();
     }
 }
