@@ -10,6 +10,7 @@ use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
 use App\Model\UserManager;
 use App\Request\BookRequest;
+use App\Request\DeleteBookRequest;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
 use App\Request\Request;
@@ -61,6 +62,10 @@ $container->set(UpdateAccountRequest::class, fn (Container $c) => new UpdateAcco
 ));
 
 $container->set(BookRequest::class, fn (Container $c) => new BookRequest(
+    new Validator(),
+    $c->get(CsrfTokenManager::class),
+));
+$container->set(DeleteBookRequest::class, fn (Container $c) => new DeleteBookRequest(
     new Validator(),
     $c->get(CsrfTokenManager::class),
 ));

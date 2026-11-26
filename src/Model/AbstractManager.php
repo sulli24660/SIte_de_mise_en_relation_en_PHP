@@ -76,6 +76,12 @@ abstract class AbstractManager
         return $stmt->fetch() !== false;
     }
 
+    public function delete(int $id): void
+    {
+        $stmt = $this->pdo->prepare(sprintf('DELETE FROM %s WHERE id = :id', $this->getTableName()));
+        $stmt->execute(['id' => $id]);
+    }
+
     private function createEntitiesFromRows(array $rows): array
     {
         return array_map(fn (array $row): object => $this->createEntityFromRow($row), $rows);

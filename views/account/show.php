@@ -78,6 +78,10 @@
                         <td><?= $book->isAvailable() ? 'disponible' : 'non dispo.' ?></td>
                         <td>
                             <a href="index.php?action=book-edit&id=<?= $book->getId() ?>">Éditer</a>
+                            <form action="index.php?action=book-delete&id=<?= $book->getId() ?>" method="post">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                <button type="submit" aria-label="Supprimer « <?= htmlspecialchars($book->getTitle()) ?> »">Supprimer</button>
+                            </form>
                         </td>
                     </tr>
                 <?php endforeach; ?>

@@ -13,12 +13,13 @@ use App\Middleware\AuthMiddleware;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
 use App\Request\BookRequest;
+use App\Request\DeleteBookRequest;
 use App\Request\Request;
 use App\Request\UpdateAccountRequest;
 
 final class Router
 {
-    private const PROTECTED_ACTIONS = ['account', 'book-create', 'book-edit', 'messages'];
+    private const PROTECTED_ACTIONS = ['account', 'book-create', 'book-edit', 'book-delete', 'messages'];
 
     public function __construct(private readonly Container $container)
     {
@@ -51,6 +52,10 @@ final class Router
                 $request->isPost()
                     ? $this->container->get(BookController::class)->update($request->queryInt('id'), $this->container->get(BookRequest::class))
                     : $this->container->get(BookController::class)->edit($request->queryInt('id'));
+                break;
+
+            case 'book-delete':
+                $this->container->get(BookController::class)->delete($request->queryInt('id'), $this->container->get(DeleteBookRequest::class));
                 break;
 
             case 'register':

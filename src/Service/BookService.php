@@ -42,6 +42,11 @@ final class BookService
         $this->bookManager->update($book);
     }
 
+    public function deleteBook(Book $book): void
+    {
+        $this->bookManager->delete($book->getId());
+    }
+
     private function fillBook(Book $book, string $title, string $author, string $description, bool $isAvailable): void
     {
         $book->setTitle($title);

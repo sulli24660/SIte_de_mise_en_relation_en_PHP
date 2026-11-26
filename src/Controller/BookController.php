@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Exception\NotFoundException;
 use App\Model\BookManager;
 use App\Request\BookRequest;
+use App\Request\DeleteBookRequest;
 use App\Service\AuthService;
 use App\Service\BookService;
 use App\Service\Flash;
@@ -84,14 +85,30 @@ final class BookController
         $this->redirectToAccount('Le livre a été modifié.');
     }
 
+    public function delete(int $id, DeleteBookRequest $deleteBookRequest): void
+    {
+        if (!$deleteBookRequest->isPost()) {
+            $this->redirectToAccount();
+        }
+
+        $book = $this->bookService->getOwnedBook($id, $this->getCurrentUserId());
+        $deleteBookRequest->validate();
+
+        $this->bookService->deleteBook($book);
+
+        $this->redirectToAccount('Le livre a été supprimé.');
+    }
+
     private function getCurrentUserId(): int
     {
         return $this->authService->getUserId() ?? 0;
     }
 
-    private function redirectToAccount(string $successMessage): never
+    private function redirectToAccount(?string $successMessage = null): never
     {
-        $this->flash->put('success', $successMessage);
+        if ($successMessage !== null) {
+            $this->flash->put('success', $successMessage);
+        }
 
         header('Location: index.php?action=account');
         exit;
