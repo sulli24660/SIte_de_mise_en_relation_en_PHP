@@ -62,6 +62,7 @@
         <table>
             <thead>
                 <tr>
+                    <th scope="col">Photo</th>
                     <th scope="col">Titre</th>
                     <th scope="col">Auteur</th>
                     <th scope="col">Description</th>
@@ -72,6 +73,11 @@
             <tbody>
                 <?php foreach ($books as $book): ?>
                     <tr>
+                        <td>
+                            <?php if ($book->getImage() !== null): ?>
+                                <img src="uploads/books/<?= htmlspecialchars($book->getImage()) ?>" alt="" width="60">
+                            <?php endif; ?>
+                        </td>
                         <td><?= htmlspecialchars($book->getTitle()) ?></td>
                         <td><?= htmlspecialchars($book->getAuthor()) ?></td>
                         <td><?= htmlspecialchars(mb_strimwidth($book->getDescription() ?? '', 0, 90, '…')) ?></td>

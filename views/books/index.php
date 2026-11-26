@@ -4,6 +4,9 @@
     <?php foreach ($books as $book): ?>
         <li>
             <article>
+                <?php if ($book->getImage() !== null): ?>
+                    <img src="uploads/books/<?= htmlspecialchars($book->getImage()) ?>" alt="" width="120">
+                <?php endif; ?>
                 <h2>
                     <a href="index.php?action=book&id=<?= $book->getId() ?>">
                         <?= htmlspecialchars($book->getTitle()) ?>

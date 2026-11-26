@@ -20,6 +20,7 @@ use App\Service\BookService;
 use App\Service\CsrfTokenManager;
 use App\Service\DBManager;
 use App\Service\Flash;
+use App\Service\ImageUploader;
 use App\Service\Router;
 use App\Service\UserService;
 use App\Service\View;
@@ -45,7 +46,11 @@ $container->set(AuthMiddleware::class, fn (Container $c) => new AuthMiddleware($
 $container->set(UserManager::class, fn (Container $c) => new UserManager($c->get(PDO::class)));
 $container->set(BookManager::class, fn (Container $c) => new BookManager($c->get(PDO::class)));
 $container->set(UserService::class, fn (Container $c) => new UserService($c->get(UserManager::class)));
-$container->set(BookService::class, fn (Container $c) => new BookService($c->get(BookManager::class)));
+$container->set(ImageUploader::class, fn () => new ImageUploader(dirname(__DIR__) . '/public/uploads/books'));
+$container->set(BookService::class, fn (Container $c) => new BookService(
+    $c->get(BookManager::class),
+    $c->get(ImageUploader::class),
+));
 
 // Formulaires
 $container->set(RegisterRequest::class, fn (Container $c) => new RegisterRequest(
@@ -64,6 +69,7 @@ $container->set(UpdateAccountRequest::class, fn (Container $c) => new UpdateAcco
 $container->set(BookRequest::class, fn (Container $c) => new BookRequest(
     new Validator(),
     $c->get(CsrfTokenManager::class),
+    $c->get(ImageUploader::class),
 ));
 $container->set(DeleteBookRequest::class, fn (Container $c) => new DeleteBookRequest(
     new Validator(),

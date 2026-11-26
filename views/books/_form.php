@@ -11,8 +11,20 @@ $values = [
     <p class="form-error" role="alert"><?= htmlspecialchars($errors->get('form')) ?></p>
 <?php endif; ?>
 
-<form action="<?= htmlspecialchars($formAction) ?>" method="post">
+<form action="<?= htmlspecialchars($formAction) ?>" method="post" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+
+    <div>
+        <?php if ($book?->getImage() !== null): ?>
+            <img src="uploads/books/<?= htmlspecialchars($book->getImage()) ?>" alt="Couverture actuelle de « <?= htmlspecialchars($book->getTitle()) ?> »" width="160">
+        <?php endif; ?>
+        <label for="image"><?= $book?->getImage() !== null ? 'Modifier la photo' : 'Photo' ?></label>
+        <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" aria-describedby="image-help">
+        <p id="image-help">JPG, PNG ou WebP, 2 Mo maximum.</p>
+        <?php if ($errors->has('image')): ?>
+            <p class="form-error"><?= htmlspecialchars($errors->get('image')) ?></p>
+        <?php endif; ?>
+    </div>
 
     <div>
         <label for="title">Titre</label>

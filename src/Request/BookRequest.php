@@ -4,9 +4,22 @@ declare(strict_types=1);
 
 namespace App\Request;
 
+use App\Service\CsrfTokenManager;
+use App\Service\ImageUploader;
+use App\Validator\ErrorBag;
+use App\Validator\Validator;
+
 final class BookRequest extends FormRequest
 {
     protected const DONT_FLASH = [];
+
+    public function __construct(
+        Validator $validator,
+        CsrfTokenManager $csrfTokenManager,
+        private readonly ImageUploader $imageUploader,
+    ) {
+        parent::__construct($validator, $csrfTokenManager);
+    }
 
     public function data(): array
     {
@@ -16,6 +29,11 @@ final class BookRequest extends FormRequest
             'description' => $this->post('description'),
             'is_available' => $this->post('is_available', '1'),
         ];
+    }
+
+    public function image(): ?array
+    {
+        return $this->file('image');
     }
 
     protected function rules(): array
@@ -33,5 +51,15 @@ final class BookRequest extends FormRequest
         return [
             'is_available.regex' => 'Choisissez une disponibilité dans la liste.',
         ];
+    }
+
+    protected function validateFiles(ErrorBag $errors): void
+    {
+        $image = $this->image();
+        $error = $image === null ? null : $this->imageUploader->getValidationError($image);
+
+        if ($error !== null) {
+            $errors->add('image', $error);
+        }
     }
 }

@@ -57,6 +57,7 @@ final class BookController
             $data['author'],
             $data['description'],
             $data['is_available'] === '1',
+            $bookRequest->image(),
         );
 
         $this->redirectToAccount('Le livre a été ajouté à votre bibliothèque.');
@@ -80,6 +81,7 @@ final class BookController
             $data['author'],
             $data['description'],
             $data['is_available'] === '1',
+            $bookRequest->image(),
         );
 
         $this->redirectToAccount('Le livre a été modifié.');

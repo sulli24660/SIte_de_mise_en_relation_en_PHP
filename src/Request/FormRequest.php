@@ -32,13 +32,20 @@ abstract class FormRequest extends Request
         return [];
     }
 
+    protected function validateFiles(ErrorBag $errors): void
+    {
+    }
+
     public function validate(): array
     {
         $data = $this->data();
 
-        $errors = $this->hasValidCsrfToken()
-            ? $this->validator->validate($data, $this->rules(), $this->messages())
-            : new ErrorBag(['form' => 'Votre session a expiré. Merci de renvoyer le formulaire.']);
+        if ($this->hasValidCsrfToken()) {
+            $errors = $this->validator->validate($data, $this->rules(), $this->messages());
+            $this->validateFiles($errors);
+        } else {
+            $errors = new ErrorBag(['form' => 'Votre session a expiré. Merci de renvoyer le formulaire.']);
+        }
 
         if (!$errors->isEmpty()) {
             throw new ValidationException($errors, array_diff_key($data, array_flip(static::DONT_FLASH)));

@@ -10,3 +10,7 @@
 # Presentation Pptx du projet
 /docs/TomTroc_documentation.pptx
 /docs
+
+# Images envoyées par les membres (on garde seulement le dossier)
+/public/uploads/books/*
+!/public/uploads/books/.gitkeep
