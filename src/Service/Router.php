@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Controller\AccountController;
 use App\Controller\BookController;
 use App\Controller\HomeController;
+use App\Controller\MessageController;
 use App\Controller\ProfileController;
 use App\Controller\UserController;
 use App\Core\Container;
@@ -14,6 +15,7 @@ use App\Exception\NotFoundException;
 use App\Middleware\AuthMiddleware;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
+use App\Request\SendMessageRequest;
 use App\Request\BookRequest;
 use App\Request\DeleteBookRequest;
 use App\Request\Request;
@@ -66,6 +68,12 @@ final class Router
 
             case 'profile':
                 $this->container->get(ProfileController::class)->show($request->queryInt('id'));
+                break;
+
+            case 'messages':
+                $request->isPost()
+                    ? $this->container->get(MessageController::class)->send($request->queryInt('with'), $this->container->get(SendMessageRequest::class))
+                    : $this->container->get(MessageController::class)->index($request->queryInt('with'));
                 break;
 
             case 'register':

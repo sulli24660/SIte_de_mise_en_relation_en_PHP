@@ -5,16 +5,19 @@ declare(strict_types=1);
 use App\Controller\AccountController;
 use App\Controller\BookController;
 use App\Controller\HomeController;
+use App\Controller\MessageController;
 use App\Controller\ProfileController;
 use App\Controller\UserController;
 use App\Core\Container;
 use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
+use App\Model\MessageManager;
 use App\Model\UserManager;
 use App\Request\BookRequest;
 use App\Request\DeleteBookRequest;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
+use App\Request\SendMessageRequest;
 use App\Request\Request;
 use App\Request\UpdateAccountRequest;
 use App\Service\AuthService;
@@ -23,6 +26,7 @@ use App\Service\CsrfTokenManager;
 use App\Service\DBManager;
 use App\Service\Flash;
 use App\Service\ImageUploader;
+use App\Service\MessageService;
 use App\Service\Router;
 use App\Service\UserService;
 use App\Service\View;
@@ -40,6 +44,8 @@ $container->set(View::class, fn (Container $c) => new View(
     $c->get(CsrfTokenManager::class),
     $c->get(AuthService::class),
     $c->get(Flash::class),
+    // Le compteur n'interroge la base qu'au moment de l'affichage, et seulement pour un membre connecté.
+    fn (int $userId): int => $c->get(MessageManager::class)->countUnreadFor($userId),
 ));
 $container->set(Router::class, fn (Container $c) => new Router($c));
 $container->set(AuthMiddleware::class, fn (Container $c) => new AuthMiddleware($c->get(AuthService::class)));
@@ -47,6 +53,11 @@ $container->set(AuthMiddleware::class, fn (Container $c) => new AuthMiddleware($
 // Modèle et métier
 $container->set(UserManager::class, fn (Container $c) => new UserManager($c->get(PDO::class)));
 $container->set(BookManager::class, fn (Container $c) => new BookManager($c->get(PDO::class)));
+$container->set(MessageManager::class, fn (Container $c) => new MessageManager($c->get(PDO::class)));
+$container->set(MessageService::class, fn (Container $c) => new MessageService(
+    $c->get(MessageManager::class),
+    $c->get(UserManager::class),
+));
 $container->set(UserService::class, fn (Container $c) => new UserService($c->get(UserManager::class)));
 $container->set(ImageUploader::class, fn () => new ImageUploader(dirname(__DIR__) . '/public/uploads/books'));
 $container->set(BookService::class, fn (Container $c) => new BookService(
@@ -74,6 +85,10 @@ $container->set(BookRequest::class, fn (Container $c) => new BookRequest(
     $c->get(ImageUploader::class),
 ));
 $container->set(DeleteBookRequest::class, fn (Container $c) => new DeleteBookRequest(
+    new Validator(),
+    $c->get(CsrfTokenManager::class),
+));
+$container->set(SendMessageRequest::class, fn (Container $c) => new SendMessageRequest(
     new Validator(),
     $c->get(CsrfTokenManager::class),
 ));
@@ -110,6 +125,12 @@ $container->set(ProfileController::class, fn (Container $c) => new ProfileContro
 ));
 $container->set(HomeController::class, fn (Container $c) => new HomeController(
     $c->get(BookManager::class),
+    $c->get(View::class),
+));
+$container->set(MessageController::class, fn (Container $c) => new MessageController(
+    $c->get(MessageManager::class),
+    $c->get(MessageService::class),
+    $c->get(AuthService::class),
     $c->get(View::class),
 ));
 

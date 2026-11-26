@@ -5,7 +5,12 @@
         <a href="index.php?action=books">Nos livres à l'échange</a>
 
         <?php if ($isLoggedIn): ?>
-            <a href="index.php?action=messages">Messagerie</a>
+            <a href="index.php?action=messages">
+                Messagerie
+                <?php if ($unreadMessagesCount > 0): ?>
+                    <span class="badge-count" aria-label="<?= $unreadMessagesCount ?> message(s) non lu(s)"><?= $unreadMessagesCount ?></span>
+                <?php endif; ?>
+            </a>
             <a href="index.php?action=account">Mon compte</a>
 
             <form action="index.php?action=logout" method="post">
