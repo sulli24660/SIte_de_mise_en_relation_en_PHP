@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controller\AccountController;
 use App\Controller\BookController;
+use App\Controller\ProfileController;
 use App\Controller\UserController;
 use App\Core\Container;
 use App\Middleware\AuthMiddleware;
@@ -79,6 +80,7 @@ $container->set(DeleteBookRequest::class, fn (Container $c) => new DeleteBookReq
 // Contrôleurs
 $container->set(BookController::class, fn (Container $c) => new BookController(
     $c->get(BookManager::class),
+    $c->get(UserManager::class),
     $c->get(BookService::class),
     $c->get(AuthService::class),
     $c->get(Flash::class),
@@ -97,6 +99,12 @@ $container->set(AccountController::class, fn (Container $c) => new AccountContro
     $c->get(UserService::class),
     $c->get(AuthService::class),
     $c->get(Flash::class),
+    $c->get(View::class),
+));
+$container->set(ProfileController::class, fn (Container $c) => new ProfileController(
+    $c->get(UserManager::class),
+    $c->get(BookManager::class),
+    $c->get(AuthService::class),
     $c->get(View::class),
 ));
 

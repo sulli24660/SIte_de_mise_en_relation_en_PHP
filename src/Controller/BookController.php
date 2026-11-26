@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Exception\NotFoundException;
 use App\Model\BookManager;
+use App\Model\UserManager;
 use App\Request\BookRequest;
 use App\Request\DeleteBookRequest;
 use App\Service\AuthService;
@@ -17,6 +18,7 @@ final class BookController
 {
     public function __construct(
         private readonly BookManager $bookManager,
+        private readonly UserManager $userManager,
         private readonly BookService $bookService,
         private readonly AuthService $authService,
         private readonly Flash $flash,
@@ -39,7 +41,11 @@ final class BookController
             throw new NotFoundException('Le livre avec l\'ID ' . $id . ' n\'existe pas.');
         }
 
-        $this->view->render('books/show', ['book' => $book]);
+        $this->view->render('books/show', [
+            'book' => $book,
+            'owner' => $this->userManager->findById($book->getUserId()),
+            'isOwnBook' => $book->getUserId() === $this->authService->getUserId(),
+        ]);
     }
 
     public function create(): void

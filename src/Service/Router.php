@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Controller\AccountController;
 use App\Controller\BookController;
+use App\Controller\ProfileController;
 use App\Controller\UserController;
 use App\Core\Container;
 use App\Exception\NotFoundException;
@@ -56,6 +57,10 @@ final class Router
 
             case 'book-delete':
                 $this->container->get(BookController::class)->delete($request->queryInt('id'), $this->container->get(DeleteBookRequest::class));
+                break;
+
+            case 'profile':
+                $this->container->get(ProfileController::class)->show($request->queryInt('id'));
                 break;
 
             case 'register':
