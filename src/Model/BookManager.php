@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Model;
 
 use DateTime;
+use PDO;
 
 final class BookManager extends AbstractManager
 {
@@ -16,6 +17,39 @@ final class BookManager extends AbstractManager
     protected function getDefaultOrderBy(): string
     {
         return 'created_at DESC';
+    }
+
+    public function findForCatalog(string $titleSearch = '', ?int $limit = null): array
+    {
+        $sql = 'SELECT books.*, users.pseudo AS owner_pseudo
+                FROM books
+                INNER JOIN users ON users.id = books.user_id';
+
+        if ($titleSearch !== '') {
+            // « ! » sert de caractère d'échappement : % et _ saisis par l'utilisateur sont cherchés tels quels.
+            $sql .= " WHERE books.title LIKE :pattern ESCAPE '!'";
+        }
+
+        $sql .= ' ORDER BY books.created_at DESC';
+
+        if ($limit !== null) {
+            $sql .= ' LIMIT :limit';
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+
+        if ($titleSearch !== '') {
+            $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $titleSearch);
+            $stmt->bindValue('pattern', '%' . $escaped . '%');
+        }
+
+        if ($limit !== null) {
+            $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+
+        return array_map(fn (array $row): Book => $this->createEntityFromRow($row), $stmt->fetchAll());
     }
 
     public function create(Book $book): int
@@ -64,6 +98,7 @@ final class BookManager extends AbstractManager
         $book->setDescription($row['description']);
         $book->setIsAvailable((bool) $row['is_available']);
         $book->setCreatedAt(new DateTime($row['created_at']));
+        $book->setOwnerPseudo($row['owner_pseudo'] ?? null);
 
         return $book;
     }

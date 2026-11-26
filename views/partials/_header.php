@@ -1,7 +1,7 @@
 <header>
     <nav>
-        <a href="index.php">Tom Troc</a>
-        <a href="index.php">Accueil</a>
+        <a href="index.php?action=home">Tom Troc</a>
+        <a href="index.php?action=home">Accueil</a>
         <a href="index.php?action=books">Nos livres à l'échange</a>
 
         <?php if ($isLoggedIn): ?>

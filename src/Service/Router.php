@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Controller\AccountController;
 use App\Controller\BookController;
+use App\Controller\HomeController;
 use App\Controller\ProfileController;
 use App\Controller\UserController;
 use App\Core\Container;
@@ -28,15 +29,19 @@ final class Router
 
     public function dispatch(Request $request): void
     {
-        $action = $request->query('action', 'books');
+        $action = $request->query('action', 'home');
 
         if (in_array($action, self::PROTECTED_ACTIONS, true)) {
             $this->container->get(AuthMiddleware::class)->handle();
         }
 
         switch ($action) {
+            case 'home':
+                $this->container->get(HomeController::class)->index();
+                break;
+
             case 'books':
-                $this->container->get(BookController::class)->index();
+                $this->container->get(BookController::class)->index($request->query('q'));
                 break;
 
             case 'book':

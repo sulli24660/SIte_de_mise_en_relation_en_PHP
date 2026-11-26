@@ -16,6 +16,7 @@ class Book
     private ?string $description = null;
     private bool $isAvailable = true;
     private DateTime $createdAt;
+    private ?string $ownerPseudo = null;
 
     public function getId(): int
     {
@@ -85,6 +86,16 @@ class Book
     public function setIsAvailable(bool $isAvailable): void
     {
         $this->isAvailable = $isAvailable;
+    }
+
+    public function getOwnerPseudo(): ?string
+    {
+        return $this->ownerPseudo;
+    }
+
+    public function setOwnerPseudo(?string $ownerPseudo): void
+    {
+        $this->ownerPseudo = $ownerPseudo;
     }
 
     public function getCreatedAt(): DateTime

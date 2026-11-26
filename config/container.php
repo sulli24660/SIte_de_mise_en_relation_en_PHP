@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controller\AccountController;
 use App\Controller\BookController;
+use App\Controller\HomeController;
 use App\Controller\ProfileController;
 use App\Controller\UserController;
 use App\Core\Container;
@@ -105,6 +106,10 @@ $container->set(ProfileController::class, fn (Container $c) => new ProfileContro
     $c->get(UserManager::class),
     $c->get(BookManager::class),
     $c->get(AuthService::class),
+    $c->get(View::class),
+));
+$container->set(HomeController::class, fn (Container $c) => new HomeController(
+    $c->get(BookManager::class),
     $c->get(View::class),
 ));
 

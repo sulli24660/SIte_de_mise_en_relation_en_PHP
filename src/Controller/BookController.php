@@ -26,11 +26,12 @@ final class BookController
     ) {
     }
 
-    public function index(): void
+    public function index(string $search): void
     {
-        $books = $this->bookManager->findAll();
-
-        $this->view->render('books/index', ['books' => $books]);
+        $this->view->render('books/index', [
+            'books' => $this->bookManager->findForCatalog($search),
+            'search' => $search,
+        ]);
     }
 
     public function show(int $id): void
