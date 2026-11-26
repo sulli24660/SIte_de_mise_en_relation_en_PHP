@@ -12,12 +12,13 @@ use App\Exception\NotFoundException;
 use App\Middleware\AuthMiddleware;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
+use App\Request\BookRequest;
 use App\Request\Request;
 use App\Request\UpdateAccountRequest;
 
 final class Router
 {
-    private const PROTECTED_ACTIONS = ['account', 'messages'];
+    private const PROTECTED_ACTIONS = ['account', 'book-create', 'messages'];
 
     public function __construct(private readonly Container $container)
     {
@@ -38,6 +39,12 @@ final class Router
 
             case 'book':
                 $this->container->get(BookController::class)->show($request->queryInt('id'));
+                break;
+
+            case 'book-create':
+                $request->isPost()
+                    ? $this->container->get(BookController::class)->store($this->container->get(BookRequest::class))
+                    : $this->container->get(BookController::class)->create();
                 break;
 
             case 'register':

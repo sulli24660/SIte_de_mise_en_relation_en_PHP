@@ -9,11 +9,13 @@ use App\Core\Container;
 use App\Middleware\AuthMiddleware;
 use App\Model\BookManager;
 use App\Model\UserManager;
+use App\Request\BookRequest;
 use App\Request\LoginRequest;
 use App\Request\RegisterRequest;
 use App\Request\Request;
 use App\Request\UpdateAccountRequest;
 use App\Service\AuthService;
+use App\Service\BookService;
 use App\Service\CsrfTokenManager;
 use App\Service\DBManager;
 use App\Service\Flash;
@@ -42,6 +44,7 @@ $container->set(AuthMiddleware::class, fn (Container $c) => new AuthMiddleware($
 $container->set(UserManager::class, fn (Container $c) => new UserManager($c->get(PDO::class)));
 $container->set(BookManager::class, fn (Container $c) => new BookManager($c->get(PDO::class)));
 $container->set(UserService::class, fn (Container $c) => new UserService($c->get(UserManager::class)));
+$container->set(BookService::class, fn (Container $c) => new BookService($c->get(BookManager::class)));
 
 // Formulaires
 $container->set(RegisterRequest::class, fn (Container $c) => new RegisterRequest(
@@ -57,9 +60,17 @@ $container->set(UpdateAccountRequest::class, fn (Container $c) => new UpdateAcco
     $c->get(CsrfTokenManager::class),
 ));
 
+$container->set(BookRequest::class, fn (Container $c) => new BookRequest(
+    new Validator(),
+    $c->get(CsrfTokenManager::class),
+));
+
 // Contrôleurs
 $container->set(BookController::class, fn (Container $c) => new BookController(
     $c->get(BookManager::class),
+    $c->get(BookService::class),
+    $c->get(AuthService::class),
+    $c->get(Flash::class),
     $c->get(View::class),
 ));
 $container->set(UserController::class, fn (Container $c) => new UserController(

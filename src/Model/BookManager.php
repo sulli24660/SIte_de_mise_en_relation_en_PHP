@@ -18,6 +18,24 @@ final class BookManager extends AbstractManager
         return 'created_at DESC';
     }
 
+    public function create(Book $book): int
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO books (user_id, title, author, image, description, is_available)
+             VALUES (:user_id, :title, :author, :image, :description, :is_available)'
+        );
+        $stmt->execute([
+            'user_id' => $book->getUserId(),
+            'title' => $book->getTitle(),
+            'author' => $book->getAuthor(),
+            'image' => $book->getImage(),
+            'description' => $book->getDescription(),
+            'is_available' => (int) $book->isAvailable(),
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
     protected function createEntityFromRow(array $row): Book
     {
         $book = new Book();

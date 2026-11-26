@@ -54,6 +54,7 @@
 
 <section class="account-library">
     <h2>Ma bibliothèque</h2>
+    <p><a href="index.php?action=book-create">Ajouter un livre</a></p>
 
     <?php if ($books === []): ?>
         <p>Vous n'avez encore ajouté aucun livre.</p>
