@@ -29,7 +29,7 @@ try {
     $flash = $container->get(Flash::class);
     $flash->put('errors', $e->errors->all());
     $flash->put('old', $e->old);
-    header('Location: index.php?action=' . rawurlencode($request->query('action')), true, 303);
+    header('Location: index.php?' . $request->queryString(), true, 303);
     exit;
 } catch (NotFoundException $e) {
     http_response_code($e->getCode());

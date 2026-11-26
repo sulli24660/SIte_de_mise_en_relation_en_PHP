@@ -32,6 +32,11 @@ class Request
         return $this->toInt($this->findString($this->query, $key), $default);
     }
 
+    public function queryString(): string
+    {
+        return http_build_query($this->query);
+    }
+
     public function post(string $key, string $default = ''): string
     {
         return trim($this->findString($this->body, $key) ?? $default);

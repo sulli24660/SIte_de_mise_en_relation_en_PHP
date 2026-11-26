@@ -18,7 +18,7 @@ use App\Request\UpdateAccountRequest;
 
 final class Router
 {
-    private const PROTECTED_ACTIONS = ['account', 'book-create', 'messages'];
+    private const PROTECTED_ACTIONS = ['account', 'book-create', 'book-edit', 'messages'];
 
     public function __construct(private readonly Container $container)
     {
@@ -45,6 +45,12 @@ final class Router
                 $request->isPost()
                     ? $this->container->get(BookController::class)->store($this->container->get(BookRequest::class))
                     : $this->container->get(BookController::class)->create();
+                break;
+
+            case 'book-edit':
+                $request->isPost()
+                    ? $this->container->get(BookController::class)->update($request->queryInt('id'), $this->container->get(BookRequest::class))
+                    : $this->container->get(BookController::class)->edit($request->queryInt('id'));
                 break;
 
             case 'register':

@@ -43,7 +43,7 @@ final class BookController
 
     public function create(): void
     {
-        $this->view->render('books/create');
+        $this->view->render('books/create', ['book' => null]);
     }
 
     public function store(BookRequest $bookRequest): void
@@ -51,14 +51,47 @@ final class BookController
         $data = $bookRequest->validate();
 
         $this->bookService->addBook(
-            $this->authService->getUserId() ?? 0,
+            $this->getCurrentUserId(),
             $data['title'],
             $data['author'],
             $data['description'],
             $data['is_available'] === '1',
         );
 
-        $this->flash->put('success', 'Le livre a été ajouté à votre bibliothèque.');
+        $this->redirectToAccount('Le livre a été ajouté à votre bibliothèque.');
+    }
+
+    public function edit(int $id): void
+    {
+        $book = $this->bookService->getOwnedBook($id, $this->getCurrentUserId());
+
+        $this->view->render('books/edit', ['book' => $book]);
+    }
+
+    public function update(int $id, BookRequest $bookRequest): void
+    {
+        $book = $this->bookService->getOwnedBook($id, $this->getCurrentUserId());
+        $data = $bookRequest->validate();
+
+        $this->bookService->updateBook(
+            $book,
+            $data['title'],
+            $data['author'],
+            $data['description'],
+            $data['is_available'] === '1',
+        );
+
+        $this->redirectToAccount('Le livre a été modifié.');
+    }
+
+    private function getCurrentUserId(): int
+    {
+        return $this->authService->getUserId() ?? 0;
+    }
+
+    private function redirectToAccount(string $successMessage): never
+    {
+        $this->flash->put('success', $successMessage);
 
         header('Location: index.php?action=account');
         exit;
